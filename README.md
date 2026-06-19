@@ -1,4 +1,4 @@
-# wormhole-sim: a relativistic wormhole simulation framework
+# Wormhole-sim: a relativistic wormhole simulation framework
 
 **Author:** Biswajit Jana  
 **Version:** 0.2.0 research preview  
