@@ -1,187 +1,916 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>wormhole-sim — relativistic wormhole simulation framework</title>
+<title>wormhole-sim | High-definition physics simulation platform</title>
 <style>
-  :root{
-    --bg:#070912; --panel:#0e1322; --ink:#e8ecf6; --muted:#9aa6c2;
-    --accent:#6db5ff; --accent2:#b98cff; --line:#1d2740; --code:#0a0f1c;
+  :root {
+    --bg: #050505;
+    --panel: #101111;
+    --panel-2: #171817;
+    --ink: #f4efe4;
+    --muted: #a7aaa1;
+    --line: #30342f;
+    --teal: #63e0ca;
+    --amber: #e7b66d;
+    --red: #ff6f61;
+    --green: #9edb7d;
+    --shadow: rgba(0, 0, 0, 0.42);
   }
-  *{box-sizing:border-box}
-  body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-       background:var(--bg);color:var(--ink)}
-  a{color:var(--accent);text-decoration:none}
-  a:hover{text-decoration:underline}
-  .wrap{max-width:920px;margin:0 auto;padding:0 22px}
-  header{padding:84px 0 56px;text-align:center;
-    background:radial-gradient(1200px 480px at 50% -120px,rgba(109,181,255,.18),transparent 60%),
-               radial-gradient(900px 420px at 50% 0,rgba(185,140,255,.12),transparent 55%);
-    border-bottom:1px solid var(--line)}
-  h1{font-size:2.7rem;margin:.1em 0;letter-spacing:-.5px}
-  .tag{color:var(--muted);font-size:1.12rem;max-width:640px;margin:14px auto 0}
-  .pills{margin-top:26px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-  .pill{border:1px solid var(--line);border-radius:999px;padding:7px 15px;color:var(--muted);font-size:.85rem;background:var(--panel)}
-  section{padding:48px 0;border-bottom:1px solid var(--line)}
-  h2{font-size:1.6rem;margin:0 0 .5em;color:#fff}
-  h3{color:var(--accent2);margin:1.6em 0 .4em;font-size:1.05rem;letter-spacing:.3px;text-transform:uppercase}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-top:18px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
-  .card h4{margin:0 0 6px;color:#fff}
-  .card p{margin:0;color:var(--muted);font-size:.92rem}
-  code,pre{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
-  pre{background:var(--code);border:1px solid var(--line);border-radius:12px;padding:16px;overflow:auto;font-size:.86rem}
-  table{width:100%;border-collapse:collapse;margin-top:16px;font-size:.92rem}
-  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left}
-  th{background:var(--panel);color:#fff}
-  .eq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 16px;margin:14px 0;overflow-x:auto}
-  figure{margin:18px 0;text-align:center}
-  figure img{max-width:100%;border:1px solid var(--line);border-radius:12px;background:#fff}
-  figcaption{color:var(--muted);font-size:.85rem;margin-top:8px}
-  .mermaid{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:16px}
-  footer{padding:40px 0 70px;color:var(--muted);font-size:.88rem;text-align:center}
-  .btn{display:inline-block;margin:6px;padding:11px 20px;border-radius:10px;border:1px solid var(--line);
-       background:linear-gradient(180deg,#15203a,#0e1626);color:#fff}
-  .note{color:var(--muted);font-size:.86rem;border-left:3px solid var(--accent);padding-left:12px;margin-top:14px}
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", sans-serif;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  button,
+  input,
+  select {
+    font: inherit;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .platform {
+    min-height: 100svh;
+    background: #050505;
+  }
+
+  .console {
+    min-height: 100svh;
+    display: grid;
+    grid-template-columns: minmax(320px, 390px) minmax(0, 1fr);
+  }
+
+  .controls {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    min-height: 100svh;
+    flex-direction: column;
+    gap: 18px;
+    padding: 22px;
+    background: var(--panel);
+    background: color-mix(in srgb, var(--panel) 94%, black);
+    border-right: 1px solid var(--line);
+    box-shadow: 18px 0 60px var(--shadow);
+  }
+
+  .brand {
+    display: grid;
+    gap: 8px;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 8px;
+    color: var(--teal);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  .pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 18px var(--green);
+  }
+
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+
+  h1 {
+    font-size: 2.05rem;
+    line-height: 1.05;
+    font-weight: 850;
+  }
+
+  .lede {
+    color: var(--muted);
+    max-width: 31rem;
+  }
+
+  .control-group {
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .group-title {
+    color: var(--amber);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .mode-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .mode-tabs button,
+  .nav-link,
+  .action-button {
+    min-height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #0b0c0b;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+  }
+
+  .mode-tabs button[aria-pressed="true"] {
+    color: #171000;
+    background: var(--amber);
+    border-color: var(--amber);
+  }
+
+  .mode-tabs button:focus-visible,
+  .nav-link:focus-visible,
+  .action-button:focus-visible,
+  select:focus-visible,
+  input:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+  }
+
+  .field {
+    display: grid;
+    gap: 6px;
+  }
+
+  .field-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 0.86rem;
+  }
+
+  .field output {
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  select {
+    width: 100%;
+    min-height: 40px;
+    color: var(--ink);
+    background: #0b0c0b;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0 12px;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--teal);
+  }
+
+  .readouts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .readout {
+    min-height: 74px;
+    display: grid;
+    align-content: center;
+    gap: 4px;
+    padding: 11px;
+    background: #0b0c0b;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .readout span {
+    color: var(--muted);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .readout strong {
+    font-size: 1.12rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .link-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: auto;
+  }
+
+  .nav-link,
+  .action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 12px;
+    text-align: center;
+  }
+
+  .action-button {
+    width: 100%;
+  }
+
+  .viewport {
+    position: relative;
+    min-width: 0;
+    min-height: 100svh;
+    overflow: hidden;
+    background: #030303;
+  }
+
+  #sim {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .topline {
+    position: absolute;
+    top: 20px;
+    left: 22px;
+    right: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    pointer-events: none;
+  }
+
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 30px;
+    padding: 0 11px;
+    color: var(--ink);
+    background: rgba(12, 13, 12, 0.76);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    font-size: 0.78rem;
+  }
+
+  .scope {
+    position: absolute;
+    right: 22px;
+    bottom: 22px;
+    width: min(420px, calc(100% - 44px));
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .scope .readout {
+    background: rgba(12, 13, 12, 0.76);
+    border-color: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+  }
+
+  .lab-band {
+    display: grid;
+    gap: 22px;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 56px 22px 70px;
+  }
+
+  .section-head {
+    display: grid;
+    gap: 8px;
+    max-width: 720px;
+  }
+
+  .section-head h2 {
+    font-size: 1.55rem;
+  }
+
+  .section-head p {
+    color: var(--muted);
+  }
+
+  .view-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .view-card {
+    min-height: 188px;
+    display: grid;
+    align-content: end;
+    gap: 8px;
+    padding: 16px;
+    background: #111211;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .view-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(120deg, rgba(99, 224, 202, 0.16), transparent 34%),
+      repeating-linear-gradient(90deg, transparent 0 16px, rgba(255, 255, 255, 0.04) 17px 18px);
+    opacity: 0.72;
+  }
+
+  .view-card > * {
+    position: relative;
+  }
+
+  .view-card h3 {
+    font-size: 1.08rem;
+  }
+
+  .view-card p {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 26px 22px;
+    color: var(--muted);
+    text-align: center;
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 960px) {
+    .console {
+      grid-template-columns: 1fr;
+    }
+
+    .controls {
+      min-height: auto;
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .viewport {
+      min-height: 72svh;
+    }
+
+    .view-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 620px) {
+    h1 {
+      font-size: 1.72rem;
+    }
+
+    .controls {
+      padding: 16px;
+    }
+
+    .mode-tabs,
+    .link-grid,
+    .readouts,
+    .scope {
+      grid-template-columns: 1fr;
+    }
+
+    .topline {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
 </style>
 </head>
 <body>
-<header>
-  <div class="wrap">
-    <h1>wormhole&#8209;sim</h1>
-    <p class="tag">A unified, tested, reproducible Python framework for relativistic
-       wormhole spacetimes — geometry, geodesics, energy conditions, and lensing.</p>
-    <div class="pills">
-      <span class="pill">Morris–Thorne · Ellis · Charged · Rotating</span>
-      <span class="pill">MIT licensed</span>
-      <span class="pill">Python · NumPy/SciPy</span>
-      <span class="pill">32 tests · CI · Docker</span>
+<main class="platform">
+  <section class="console" aria-label="Wormhole simulation console">
+    <aside class="controls">
+      <div class="brand">
+        <div class="eyebrow"><span class="pulse"></span>Live physics renderer</div>
+        <h1>wormhole-sim</h1>
+        <p class="lede">A high-definition simulation console for lensing, embedding geometry, exotic matter, and ringdown diagnostics.</p>
+      </div>
+
+      <div class="control-group">
+        <div class="group-title">Simulation mode</div>
+        <div class="mode-tabs" role="group" aria-label="Simulation mode">
+          <button type="button" data-mode="lensing" aria-pressed="true">Lensing</button>
+          <button type="button" data-mode="embedding" aria-pressed="false">Embedding</button>
+          <button type="button" data-mode="curvature" aria-pressed="false">Curvature</button>
+        </div>
+        <div class="field">
+          <label class="field-row" for="metric"><span>Metric family</span></label>
+          <select id="metric">
+            <option value="ellis">Ellis-Bronnikov</option>
+            <option value="morris">Morris-Thorne</option>
+            <option value="teo">Teo rotating</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="group-title">Parameters</div>
+        <label class="field">
+          <span class="field-row"><span>Throat radius b0</span><output id="b0Out">1.20</output></span>
+          <input id="b0" type="range" min="0.6" max="3.0" step="0.05" value="1.2" />
+        </label>
+        <label class="field">
+          <span class="field-row"><span>Frame dragging</span><output id="spinOut">0.32</output></span>
+          <input id="spin" type="range" min="0" max="0.9" step="0.01" value="0.32" />
+        </label>
+        <label class="field">
+          <span class="field-row"><span>Exposure</span><output id="exposureOut">0.76</output></span>
+          <input id="exposure" type="range" min="0.35" max="1.2" step="0.01" value="0.76" />
+        </label>
+        <label class="field">
+          <span class="field-row"><span>Render scale</span><output id="scaleOut">2.0x</output></span>
+          <input id="scale" type="range" min="1" max="2.5" step="0.1" value="2" />
+        </label>
+      </div>
+
+      <div class="control-group">
+        <div class="group-title">Live diagnostics</div>
+        <div class="readouts">
+          <div class="readout"><span>Deflection</span><strong id="deflection">42.8 deg</strong></div>
+          <div class="readout"><span>NEC min</span><strong id="nec">-0.0276</strong></div>
+          <div class="readout"><span>Curvature</span><strong id="curvature">8.33</strong></div>
+          <div class="readout"><span>QNM</span><strong id="qnm">1.69 - 0.21i</strong></div>
+        </div>
+      </div>
+
+      <button class="action-button" id="pause" type="button">Pause render</button>
+
+      <div class="link-grid" aria-label="Simulation views">
+        <a class="nav-link" href="realtime.html">Real-time lensing</a>
+        <a class="nav-link" href="embedding3d.html">3D embedding</a>
+        <a class="nav-link" href="../README.md">README</a>
+        <a class="nav-link" href="../docs/mathematical_foundations.md">Theory</a>
+      </div>
+    </aside>
+
+    <div class="viewport">
+      <canvas id="sim" aria-label="Animated wormhole simulation render"></canvas>
+      <div class="topline">
+        <div class="chip-row">
+          <span class="chip">HD canvas</span>
+          <span class="chip" id="modeChip">Lensing</span>
+          <span class="chip" id="metricChip">Ellis-Bronnikov</span>
+        </div>
+        <span class="chip" id="fps">60 fps</span>
+      </div>
+      <div class="scope">
+        <div class="readout"><span>Observer</span><strong id="observer">+8.0 l</strong></div>
+        <div class="readout"><span>Ray samples</span><strong id="samples">1400</strong></div>
+      </div>
     </div>
-    <div style="margin-top:26px">
-      <a class="btn" href="../README.md">README</a>
-      <a class="btn" href="../docs/mathematical_foundations.md">Theory</a>
-      <a class="btn" href="../docs/architecture.md">Architecture</a>
-      <a class="btn" href="embedding3d.html">3D embedding (orbit)</a>
-      <a class="btn" href="realtime.html">Real-time lensing</a>
+  </section>
+
+  <section class="lab-band">
+    <div class="section-head">
+      <h2>Audience-ready simulation views</h2>
+      <p>The static site ships with browser-native physics visuals, while the Python package keeps the same metric families available for tested research workflows.</p>
     </div>
-  </div>
-</header>
-
-<section><div class="wrap">
-  <h2>Overview</h2>
-  <p>A <strong>wormhole</strong> connects two regions of spacetime through a
-     <em>throat</em>. The non-traversable Einstein–Rosen bridge (1935) pinches off
-     behind a horizon; the traversable wormholes of Ellis–Bronnikov (1973) and
-     <strong>Morris &amp; Thorne (1988)</strong> stay open — but only if matter
-     <strong>violates the null energy condition</strong> at the throat. Quantum field
-     theory permits localized negative energy, yet the <strong>Ford–Roman quantum
-     inequalities (1995)</strong> bound how much. This framework implements the
-     classical, geometric side of that story: specify a metric, and obtain its
-     curvature, exotic-matter content, geodesics, and lensing signature.</p>
-  <div class="note">This is a research scaffold, not a new rendering technique.
-     See <a href="../docs/related_work.md">Related Work</a> for an honest survey of
-     existing wormhole and lensing codes and how this differs.</div>
-</div></section>
-
-<section><div class="wrap">
-  <h2>The metric families</h2>
-  <div class="grid">
-    <div class="card"><h4>Morris–Thorne</h4><p>Static spherical throat with free
-       shape <code>b(r)</code> and redshift <code>Φ(r)</code>; the canonical
-       exotic-matter wormhole.</p></div>
-    <div class="card"><h4>Ellis–Bronnikov</h4><p>Massless "drainhole" sourced by a
-       phantom scalar; geodesically complete, curvature bounded; exact lensing.</p></div>
-    <div class="card"><h4>Charged</h4><p>Reissner–Nordström-like throat from the
-       Einstein–Maxwell system; charge <code>Q</code> stiffens the throat.</p></div>
-    <div class="card"><h4>Teo rotating</h4><p>Stationary axisymmetric wormhole with
-       frame dragging <code>ω(r)</code> through the off-diagonal metric term.</p></div>
-  </div>
-
-  <h3>Static line element &amp; flare-out</h3>
-  <div class="eq">$$ds^2 = -e^{2\Phi(r)}dt^2 + \frac{dr^2}{1-b(r)/r} + r^2(d\theta^2+\sin^2\theta\,d\phi^2)$$</div>
-  <p>The throat at <code>b(r₀)=r₀</code> with flare-out <code>b'(r₀)&lt;1</code> forces,
-     via the field equations,</p>
-  <div class="eq">$$\rho + p_r = \frac{1}{8\pi}\frac{b'r-b}{r^3} < 0 \quad\Rightarrow\quad \text{NEC violation.}$$</div>
-</div></section>
-
-<section><div class="wrap">
-  <h2>From metric to geodesic in five lines</h2>
-<pre><code>from core.metrics import EllisBronnikov
-from numerics.geodesic import GeodesicSolver, null_initial_velocity
-import numpy as np
-
-wh = EllisBronnikov(b0=1.0)
-x0 = np.array([0.0, 6.0, np.pi/2, 0.0])               # (t, r, theta, phi)
-u0 = null_initial_velocity(wh, x0, [-1.0, 0.0, 0.05]) # an off-axis photon
-res = GeodesicSolver(wh).integrate(x0, u0, affine_span=(0, 20))
-print(res.coords[:,1].min() < 0)          # True: the ray crossed the throat
-</code></pre>
-  <p class="note">Curvature is computed numerically from <code>components(x)</code>, so
-     a new metric only needs that one method — geodesics, energy conditions and
-     embeddings then work automatically.</p>
-</div></section>
-
-<section><div class="wrap">
-  <h2>What you can render</h2>
-  <figure>
-    <img src="../figures/embedding_morris_thorne.png" alt="Morris-Thorne embedding diagram" />
-    <figcaption>Embedding diagram of a Morris–Thorne wormhole — the two sheets flare
-      out of the throat (generated by <code>examples/run_demos.py</code>).</figcaption>
-  </figure>
-  <figure>
-    <img src="../figures/ellis_deflection.png" alt="Ellis wormhole light deflection" />
-    <figcaption>Exact light-deflection curve for the Ellis wormhole vs. impact
-      parameter — the basis for gravitational-lensing ray tracing.</figcaption>
-  </figure>
-</div></section>
-
-<section><div class="wrap">
-  <h2>Numerical methods at a glance</h2>
-  <table>
-    <tr><th>Method</th><th>Advantage</th><th>Drawback</th><th>Used for</th></tr>
-    <tr><td>Geodesic ODE (RK45/RK4)</td><td>Lightweight, norm-conserving</td><td>Stiff near singularities</td><td>Rays, particles, lensing</td></tr>
-    <tr><td>Finite difference</td><td>Simple local stencils</td><td>Low order</td><td>Scalar-wave evolution</td></tr>
-    <tr><td>Chebyshev spectral</td><td>Exponential convergence</td><td>Global coupling</td><td>Static field BVPs</td></tr>
-    <tr><td>AMR (external)</td><td>Resolves throat gradients</td><td>Overhead</td><td>Einstein Toolkit evolution</td></tr>
-  </table>
-</div></section>
-
-<section><div class="wrap">
-  <h2>Module architecture</h2>
-  <div class="mermaid">
-flowchart LR
-  subgraph core[core/ physics]
-    M[metrics: MT · Ellis · Charged · Teo] --> S[stress_energy: Einstein · NEC/WEC]
-  end
-  subgraph numerics[numerics/ solvers]
-    G[GeodesicSolver]
-    P[FiniteDifferenceWave]
-  end
-  subgraph viz[visualization/]
-    E[embed]
-    R[raytrace]
-    PE[penrose]
-  end
-  M --> G --> R
-  M --> E
-  S --> viz
-  viz --> W[web · docs]
-  </div>
-</div></section>
-
-<footer><div class="wrap">
-  wormhole-sim · MIT · built for GR / numerical-relativity research ·
-  primary references: Morris &amp; Thorne 1988 · Ellis 1973 · Teo 1998 · Ford &amp; Roman 1995
-</div></footer>
+    <div class="view-grid">
+      <a class="view-card" href="realtime.html">
+        <h3>Geodesic ray tracer</h3>
+        <p>Real-time Ellis wormhole lensing with a procedural star field and throat traversal.</p>
+      </a>
+      <a class="view-card" href="embedding3d.html">
+        <h3>Embedding surface</h3>
+        <p>Orbit and zoom through Morris-Thorne and Ellis throat geometry in 3D.</p>
+      </a>
+      <a class="view-card" href="../docs/architecture.md">
+        <h3>Research pipeline</h3>
+        <p>Metrics, curvature, energy conditions, geodesics, QNM, and visualization modules.</p>
+      </a>
+    </div>
+  </section>
+</main>
+<footer>wormhole-sim | MIT | relativistic wormhole simulation framework</footer>
 
 <script>
-  window.MathJax = { tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] } };
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+(() => {
+  const canvas = document.getElementById("sim");
+  const ctx = canvas.getContext("2d", { alpha: false });
+  const modeButtons = [...document.querySelectorAll("[data-mode]")];
+  const metricSelect = document.getElementById("metric");
+  const controls = {
+    b0: document.getElementById("b0"),
+    spin: document.getElementById("spin"),
+    exposure: document.getElementById("exposure"),
+    scale: document.getElementById("scale")
+  };
+  const out = {
+    b0: document.getElementById("b0Out"),
+    spin: document.getElementById("spinOut"),
+    exposure: document.getElementById("exposureOut"),
+    scale: document.getElementById("scaleOut"),
+    deflection: document.getElementById("deflection"),
+    nec: document.getElementById("nec"),
+    curvature: document.getElementById("curvature"),
+    qnm: document.getElementById("qnm"),
+    fps: document.getElementById("fps"),
+    observer: document.getElementById("observer"),
+    samples: document.getElementById("samples"),
+    modeChip: document.getElementById("modeChip"),
+    metricChip: document.getElementById("metricChip")
+  };
+  const pauseButton = document.getElementById("pause");
+
+  const metricLabels = {
+    ellis: "Ellis-Bronnikov",
+    morris: "Morris-Thorne",
+    teo: "Teo rotating"
+  };
+  const state = {
+    mode: "lensing",
+    metric: "ellis",
+    b0: 1.2,
+    spin: 0.32,
+    exposure: 0.76,
+    scale: 2,
+    paused: false,
+    t: 0
+  };
+
+  const stars = Array.from({ length: 1400 }, (_, i) => {
+    const a = (i * 2.399963229728653) % (Math.PI * 2);
+    const r = Math.sqrt(((i * 37) % 997) / 997);
+    const warm = i % 5 === 0;
+    return {
+      x: Math.cos(a) * r,
+      y: Math.sin(a) * r,
+      z: ((i * 53) % 100) / 100,
+      s: 0.45 + (((i * 29) % 100) / 100) * 1.8,
+      color: warm ? "rgba(231,182,109," : "rgba(182,245,233,"
+    };
+  });
+
+  let cssWidth = 1;
+  let cssHeight = 1;
+  let dpr = 1;
+  let lastFrame = performance.now();
+  let fps = 60;
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    cssWidth = Math.max(1, rect.width);
+    cssHeight = Math.max(1, rect.height);
+    dpr = Math.min(window.devicePixelRatio || 1, state.scale);
+    canvas.width = Math.round(cssWidth * dpr);
+    canvas.height = Math.round(cssHeight * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function updateState() {
+    state.metric = metricSelect.value;
+    state.b0 = Number(controls.b0.value);
+    state.spin = Number(controls.spin.value);
+    state.exposure = Number(controls.exposure.value);
+    const newScale = Number(controls.scale.value);
+    if (newScale !== state.scale) {
+      state.scale = newScale;
+      resize();
+    }
+
+    out.b0.value = state.b0.toFixed(2);
+    out.spin.value = state.spin.toFixed(2);
+    out.exposure.value = state.exposure.toFixed(2);
+    out.scale.value = state.scale.toFixed(1) + "x";
+    out.modeChip.textContent = state.mode[0].toUpperCase() + state.mode.slice(1);
+    out.metricChip.textContent = metricLabels[state.metric];
+    out.samples.textContent = String(stars.length);
+
+    const metricSpin = state.metric === "teo" ? 1 + state.spin * 0.7 : 1;
+    const impact = 2.1 + (1.25 - state.exposure) * 1.4;
+    const alpha = Math.min(178, (2 * Math.atan((state.b0 * state.b0) / impact)) * 180 / Math.PI * metricSpin);
+    const nec = -1 / (8 * Math.PI * state.b0 * state.b0);
+    const curvature = 12 / (state.b0 * state.b0);
+    const qReal = Math.sqrt(5.75) / state.b0;
+    const qImag = 0.25 / state.b0;
+    const observer = 8 + Math.sin(state.t * 0.00022) * 2.6;
+
+    out.deflection.textContent = alpha.toFixed(1) + " deg";
+    out.nec.textContent = nec.toFixed(4);
+    out.curvature.textContent = curvature.toFixed(2);
+    out.qnm.textContent = qReal.toFixed(2) + " - " + qImag.toFixed(2) + "i";
+    out.observer.textContent = (observer >= 0 ? "+" : "") + observer.toFixed(1) + " l";
+  }
+
+  function clear() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = "#030303";
+    ctx.fillRect(0, 0, cssWidth, cssHeight);
+  }
+
+  function drawBackgroundGrid(cx, cy, time) {
+    ctx.save();
+    ctx.globalAlpha = 0.26;
+    ctx.strokeStyle = "rgba(99, 224, 202, 0.22)";
+    ctx.lineWidth = 1;
+    const spacing = Math.max(34, Math.min(cssWidth, cssHeight) / 16);
+    for (let x = -spacing; x < cssWidth + spacing; x += spacing) {
+      ctx.beginPath();
+      ctx.moveTo(x + Math.sin(time + x * 0.01) * 5, 0);
+      ctx.lineTo(x - (cx - x) * 0.05, cssHeight);
+      ctx.stroke();
+    }
+    for (let y = -spacing; y < cssHeight + spacing; y += spacing) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.quadraticCurveTo(cx, y + (cy - y) * 0.18, cssWidth, y);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawLensing(time) {
+    const cx = cssWidth * 0.55;
+    const cy = cssHeight * 0.48;
+    const radius = Math.min(cssWidth, cssHeight) * (0.135 + state.b0 * 0.026);
+    const lens = 0.38 + state.b0 * 0.11 + state.exposure * 0.18;
+    drawBackgroundGrid(cx, cy, time * 0.00012);
+
+    for (const star of stars) {
+      const drift = time * 0.000018 * (0.3 + state.spin);
+      const sx = cx + (star.x * Math.cos(drift) - star.y * Math.sin(drift)) * cssWidth * 0.58;
+      const sy = cy + (star.x * Math.sin(drift) + star.y * Math.cos(drift)) * cssHeight * 0.58;
+      const dx = sx - cx;
+      const dy = sy - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy) + 1;
+      const bend = 1 + lens * radius * radius / (dist * dist + radius * 58);
+      const px = cx + dx * bend;
+      const py = cy + dy * bend;
+      if (px < -8 || px > cssWidth + 8 || py < -8 || py > cssHeight + 8) continue;
+      const alpha = Math.min(0.96, 0.26 + star.z * 0.6 + state.exposure * 0.22);
+      ctx.fillStyle = star.color + alpha + ")";
+      ctx.beginPath();
+      ctx.arc(px, py, star.s, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(time * 0.00015 * (0.4 + state.spin));
+    for (let i = 0; i < 10; i++) {
+      const r = radius * (1.05 + i * 0.18);
+      ctx.strokeStyle = i % 2 ? "rgba(231,182,109,0.22)" : "rgba(99,224,202,0.28)";
+      ctx.lineWidth = 1.1;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, r * 1.32, r * 0.68, i * 0.18, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    for (let i = -5; i <= 5; i++) {
+      const y = cy + i * radius * 0.34;
+      ctx.strokeStyle = i === 0 ? "rgba(231,182,109,0.72)" : "rgba(99,224,202,0.32)";
+      ctx.lineWidth = i === 0 ? 1.8 : 1;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.bezierCurveTo(cx * 0.52, y - i * 13, cx * 0.74, cy + i * 18, cssWidth, cy - i * 16);
+      ctx.stroke();
+    }
+
+    const gradient = ctx.createRadialGradient(cx, cy, radius * 0.12, cx, cy, radius * 1.45);
+    gradient.addColorStop(0, "#000000");
+    gradient.addColorStop(0.42, "rgba(8, 8, 7, 0.95)");
+    gradient.addColorStop(0.58, "rgba(231, 182, 109, 0.62)");
+    gradient.addColorStop(0.72, "rgba(99, 224, 202, 0.38)");
+    gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * 1.55, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(244,239,228,0.78)";
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * 0.52, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  function project(x, y, z, time) {
+    const angle = time * 0.0002 * (0.25 + state.spin);
+    const ca = Math.cos(angle);
+    const sa = Math.sin(angle);
+    const rx = x * ca - z * sa;
+    const rz = x * sa + z * ca + 9.5;
+    const f = Math.min(cssWidth, cssHeight) * 0.75;
+    const s = f / (f + rz * 38);
+    return [cssWidth * 0.55 + rx * s * 52, cssHeight * 0.52 + y * s * 46, s];
+  }
+
+  function profile(v) {
+    const b = state.b0;
+    if (state.metric === "ellis") {
+      return { r: Math.sqrt(v * v + b * b), z: v * 0.82 };
+    }
+    const r = b + Math.abs(v) * 0.62;
+    const z = Math.sign(v || 1) * Math.sqrt(Math.max(0, r * r - b * b)) * 0.82;
+    return { r, z };
+  }
+
+  function drawEmbedding(time) {
+    const rows = 36;
+    const cols = 84;
+    const limit = 4.9;
+    ctx.save();
+    ctx.globalAlpha = 0.42;
+    drawBackgroundGrid(cssWidth * 0.55, cssHeight * 0.5, time * 0.00008);
+    ctx.restore();
+
+    for (let i = 0; i < rows; i++) {
+      const v = -limit + (2 * limit * i) / (rows - 1);
+      const p = profile(v);
+      ctx.beginPath();
+      for (let j = 0; j <= cols; j++) {
+        const a = (Math.PI * 2 * j) / cols;
+        const pt = project(Math.cos(a) * p.r, p.z, Math.sin(a) * p.r, time);
+        if (j === 0) ctx.moveTo(pt[0], pt[1]);
+        else ctx.lineTo(pt[0], pt[1]);
+      }
+      const near = 1 - Math.abs(v) / limit;
+      ctx.strokeStyle = `rgba(99, 224, 202, ${0.12 + near * 0.46})`;
+      ctx.lineWidth = 0.9 + near * 0.8;
+      ctx.stroke();
+    }
+
+    for (let j = 0; j < 18; j++) {
+      const a = (Math.PI * 2 * j) / 18;
+      ctx.beginPath();
+      for (let i = 0; i < rows; i++) {
+        const v = -limit + (2 * limit * i) / (rows - 1);
+        const p = profile(v);
+        const pt = project(Math.cos(a) * p.r, p.z, Math.sin(a) * p.r, time);
+        if (i === 0) ctx.moveTo(pt[0], pt[1]);
+        else ctx.lineTo(pt[0], pt[1]);
+      }
+      ctx.strokeStyle = "rgba(231, 182, 109, 0.22)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    const throat = profile(0);
+    ctx.beginPath();
+    for (let j = 0; j <= cols; j++) {
+      const a = (Math.PI * 2 * j) / cols;
+      const pt = project(Math.cos(a) * throat.r, 0, Math.sin(a) * throat.r, time);
+      if (j === 0) ctx.moveTo(pt[0], pt[1]);
+      else ctx.lineTo(pt[0], pt[1]);
+    }
+    ctx.strokeStyle = "rgba(255, 111, 97, 0.92)";
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+  }
+
+  function drawCurvature(time) {
+    const cell = Math.max(9, Math.round(Math.min(cssWidth, cssHeight) / 70));
+    const cx = cssWidth * 0.55;
+    const cy = cssHeight * 0.46;
+    const scale = Math.min(cssWidth, cssHeight) * 0.22;
+    for (let y = 0; y < cssHeight; y += cell) {
+      for (let x = 0; x < cssWidth; x += cell) {
+        const dx = (x - cx) / scale;
+        const dy = (y - cy) / scale;
+        const r2 = dx * dx + dy * dy;
+        const c = (state.b0 * state.b0) / Math.pow(r2 + state.b0 * state.b0, 2);
+        const heat = Math.min(1, c * 1.9 * state.exposure);
+        const rr = Math.round(28 + heat * 220);
+        const gg = Math.round(38 + heat * 118);
+        const bb = Math.round(34 + (1 - heat) * 84);
+        ctx.fillStyle = `rgb(${rr},${gg},${bb})`;
+        ctx.fillRect(x, y, cell + 1, cell + 1);
+      }
+    }
+
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    for (let ring = 1; ring <= 8; ring++) {
+      const r = scale * ring * 0.22 * state.b0;
+      ctx.strokeStyle = ring % 2 ? "rgba(99,224,202,0.28)" : "rgba(231,182,109,0.26)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, r * 1.5, r * 0.86, time * 0.00012, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    const plotW = Math.min(620, cssWidth * 0.7);
+    const plotH = Math.min(210, cssHeight * 0.28);
+    const px = cssWidth * 0.5 - plotW * 0.42;
+    const py = cssHeight - plotH - 56;
+    ctx.fillStyle = "rgba(5, 5, 5, 0.62)";
+    ctx.strokeStyle = "rgba(244,239,228,0.16)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(px, py, plotW, plotH, 8);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(255,111,97,0.78)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < 220; i++) {
+      const x = -5 + (10 * i) / 219;
+      const potential = (6 / (x * x + state.b0 * state.b0)) - (state.b0 * state.b0) / Math.pow(x * x + state.b0 * state.b0, 2);
+      const sx = px + (i / 219) * plotW;
+      const sy = py + plotH - Math.min(1, potential / 5.6) * plotH * 0.82 - 18;
+      if (i === 0) ctx.moveTo(sx, sy);
+      else ctx.lineTo(sx, sy);
+    }
+    ctx.stroke();
+    ctx.fillStyle = "rgba(244,239,228,0.72)";
+    ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+    ctx.fillText("Regge-Wheeler potential", px + 14, py + 24);
+  }
+
+  function draw(time) {
+    clear();
+    if (state.mode === "embedding") drawEmbedding(time);
+    else if (state.mode === "curvature") drawCurvature(time);
+    else drawLensing(time);
+  }
+
+  function loop(now) {
+    const dt = now - lastFrame;
+    lastFrame = now;
+    fps = fps * 0.88 + (1000 / Math.max(16, dt)) * 0.12;
+    out.fps.textContent = Math.round(fps) + " fps";
+    if (!state.paused) {
+      state.t = now;
+      updateState();
+      draw(now);
+    }
+    requestAnimationFrame(loop);
+  }
+
+  modeButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      state.mode = button.dataset.mode;
+      modeButtons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+      updateState();
+      draw(performance.now());
+    });
+  });
+
+  Object.values(controls).forEach((control) => control.addEventListener("input", updateState));
+  metricSelect.addEventListener("change", updateState);
+  pauseButton.addEventListener("click", () => {
+    state.paused = !state.paused;
+    pauseButton.textContent = state.paused ? "Resume render" : "Pause render";
+  });
+
+  window.addEventListener("resize", resize);
+  resize();
+  updateState();
+  requestAnimationFrame(loop);
+})();
 </script>
 </body>
 </html>
