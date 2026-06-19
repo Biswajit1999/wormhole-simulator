@@ -9,8 +9,8 @@
     --bg: #010102;
     --ink: #f8f5ed;
     --muted: #b5b5ad;
-    --panel: rgba(8, 9, 10, 0.66);
-    --panel-strong: rgba(8, 9, 10, 0.86);
+    --panel: rgba(8, 9, 10, 0.54);
+    --panel-strong: rgba(8, 9, 10, 0.78);
     --line: rgba(255, 255, 255, 0.14);
     --line-strong: rgba(255, 255, 255, 0.24);
     --amber: #f2bf72;
@@ -71,8 +71,8 @@
     z-index: 1;
     pointer-events: none;
     background:
-      linear-gradient(90deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.24) 42%, rgba(0, 0, 0, 0.42)),
-      linear-gradient(180deg, rgba(0, 0, 0, 0.56), transparent 34%, rgba(0, 0, 0, 0.72));
+      linear-gradient(90deg, rgba(0, 0, 0, 0.56), rgba(0, 0, 0, 0.10) 42%, rgba(0, 0, 0, 0.26)),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.36), transparent 34%, rgba(0, 0, 0, 0.60));
   }
 
   .hero {
@@ -97,8 +97,8 @@
 
   .topbar {
     width: fit-content;
-    max-width: min(560px, 100%);
-    padding: 16px 18px;
+    max-width: min(420px, 100%);
+    padding: 12px 14px;
     border-radius: 8px;
   }
 
@@ -107,7 +107,7 @@
     align-items: center;
     gap: 8px;
     color: var(--cyan);
-    font-size: 0.76rem;
+    font-size: 0.68rem;
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -129,33 +129,33 @@
   }
 
   h1 {
-    margin-top: 8px;
-    font-size: clamp(2.35rem, 5.6vw, 4.9rem);
-    line-height: 0.92;
+    margin-top: 6px;
+    font-size: clamp(1.85rem, 3.35vw, 3.35rem);
+    line-height: 0.96;
     letter-spacing: 0;
     font-weight: 900;
     white-space: nowrap;
   }
 
   .subtitle {
-    max-width: 48rem;
-    margin-top: 12px;
+    max-width: 30rem;
+    margin-top: 8px;
     color: var(--muted);
-    font-size: clamp(0.98rem, 1.4vw, 1.16rem);
+    font-size: clamp(0.88rem, 1.1vw, 1rem);
   }
 
   .control-row {
     align-self: end;
     display: grid;
-    grid-template-columns: minmax(300px, 430px) minmax(250px, 360px);
-    gap: 14px;
+    grid-template-columns: minmax(280px, 400px) minmax(220px, 310px);
+    gap: 12px;
     align-items: end;
   }
 
   .panel {
     display: grid;
-    gap: 14px;
-    padding: 14px;
+    gap: 10px;
+    padding: 12px;
     border-radius: 8px;
   }
 
@@ -195,7 +195,7 @@
   .fields {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 8px;
   }
 
   .field {
@@ -213,7 +213,7 @@
     justify-content: space-between;
     gap: 10px;
     color: var(--muted);
-    font-size: 0.82rem;
+    font-size: 0.76rem;
   }
 
   output {
@@ -262,11 +262,11 @@
   }
 
   .readout {
-    min-height: 72px;
+    min-height: 58px;
     display: grid;
     align-content: center;
     gap: 4px;
-    padding: 12px;
+    padding: 10px;
     background: var(--panel-strong);
   }
 
@@ -279,7 +279,7 @@
   }
 
   .readout strong {
-    font-size: 1.12rem;
+    font-size: 1rem;
     font-variant-numeric: tabular-nums;
   }
 
@@ -288,6 +288,7 @@
     z-index: 3;
     top: 24px;
     right: 24px;
+    max-width: calc(100vw - 48px);
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
@@ -296,16 +297,16 @@
   }
 
   .chip {
-    min-height: 30px;
+    min-height: 28px;
     display: inline-flex;
     align-items: center;
-    padding: 0 11px;
+    padding: 0 10px;
     color: var(--ink);
     background: rgba(8, 9, 10, 0.62);
     border: 1px solid var(--line);
     border-radius: 999px;
     backdrop-filter: blur(14px);
-    font-size: 0.78rem;
+    font-size: 0.72rem;
   }
 
   .below {
@@ -581,11 +582,11 @@ vec3 sky(vec2 p, float side) {
   vec3 warm = side > 0.0 ? vec3(0.22, 0.25, 0.38) : vec3(0.42, 0.24, 0.12);
   vec3 nebula = mix(cold, warm, band * (0.45 + dust));
   float stars =
-    starLayer(q + side * 4.0, 58.0, 0.948) +
-    starLayer(q * 1.7 + 19.0, 116.0, 0.974) +
-    starLayer(q * 2.4 - 9.0, 210.0, 0.986);
+    starLayer(q + side * 4.0, 64.0, 0.938) +
+    starLayer(q * 1.7 + 19.0, 132.0, 0.968) +
+    starLayer(q * 2.4 - 9.0, 248.0, 0.982);
   vec3 starColor = mix(vec3(0.7, 0.9, 1.0), vec3(1.0, 0.72, 0.42), noise(q * 9.0));
-  return nebula + stars * starColor * 1.25;
+  return nebula + stars * starColor * 1.55;
 }
 
 float lineField(vec2 uv, float r, float a) {
@@ -612,12 +613,12 @@ float geometryGrid(vec2 uv) {
 
 void main() {
   vec2 uv = (gl_FragCoord.xy - 0.5 * uResolution.xy) / uResolution.y;
-  uv.x -= 0.22;
+  uv.x -= 0.26;
   float r = length(uv);
   float a = atan(uv.y, uv.x);
 
   float metricBoost = 1.0 + 0.12 * uMetric;
-  float throat = 0.185 + 0.032 * uB0;
+  float throat = 0.172 + 0.030 * uB0;
   float spin = uSpin * (0.35 + 0.18 * uMetric);
   vec2 swirlUv = rot(spin * exp(-r * 1.35) + 0.015 * uTime) * uv;
 
@@ -636,27 +637,29 @@ void main() {
   float inside = smoothstep(throat + 0.012, throat - 0.012, r);
   vec3 col = mix(nearSky, farSky, inside);
 
-  float ring = exp(-pow((r - throat) / 0.010, 2.0));
-  float ringOuter = exp(-pow((r - throat * 1.42) / 0.042, 2.0));
-  float photon = exp(-pow((r - throat * 0.74) / 0.012, 2.0));
-  vec3 ringColor = vec3(1.55, 1.08, 0.62) * ring + vec3(0.32, 0.85, 0.95) * ringOuter;
-  col += ringColor * (1.1 + 0.45 * uLens);
-  col += vec3(0.95, 0.74, 0.46) * photon * 0.26;
+  float ring = exp(-pow((r - throat) / 0.0065, 2.0));
+  float ringOuter = exp(-pow((r - throat * 1.34) / 0.026, 2.0));
+  float photon = exp(-pow((r - throat * 0.72) / 0.006, 2.0));
+  float caustic = exp(-pow((r - throat * 1.03 - 0.010 * sin(a * 5.0 - uTime * 0.18)) / 0.0055, 2.0));
+  vec3 ringColor = vec3(1.65, 1.18, 0.74) * ring + vec3(0.20, 0.62, 0.70) * ringOuter * 0.58;
+  col += ringColor * (1.22 + 0.48 * uLens);
+  col += vec3(1.0, 0.82, 0.48) * photon * 0.42;
+  col += vec3(1.0, 0.72, 0.38) * caustic * 0.30;
 
   float diskTilt = uv.y + 0.045 * sin(uv.x * 3.2 + uTime * 0.16);
-  float diskBand = exp(-pow(diskTilt / (0.021 + 0.004 * uB0), 2.0));
-  float diskMask = smoothstep(throat * 0.76, throat * 1.2, abs(uv.x)) * smoothstep(1.18, 0.05, r);
+  float diskBand = exp(-pow(diskTilt / (0.012 + 0.002 * uB0), 2.0));
+  float diskMask = smoothstep(throat * 0.68, throat * 1.02, abs(uv.x)) * smoothstep(1.04, 0.05, r);
   float front = smoothstep(-0.035, 0.10, uv.y);
   vec3 diskColor = mix(vec3(1.0, 0.34, 0.12), vec3(1.0, 0.82, 0.42), smoothstep(-0.4, 0.7, uv.x));
-  col += diskColor * diskBand * diskMask * (0.38 + 0.62 * front) * (0.8 + 0.4 * uExposure);
+  col += diskColor * diskBand * diskMask * (0.48 + 0.72 * front) * (0.82 + 0.42 * uExposure);
 
   float rays = lineField(uv, r, a);
   float grid = geometryGrid(uv);
   col += vec3(0.55, 0.95, 1.0) * rays * smoothstep(0.4, 1.4, uMode);
   col += vec3(0.75, 0.95, 1.0) * grid * smoothstep(1.6, 2.2, uMode) * 0.65;
 
-  float shadow = smoothstep(throat * 0.64, throat * 0.28, r);
-  col *= 1.0 - shadow * 0.58;
+  float shadow = smoothstep(throat * 0.70, throat * 0.34, r);
+  col *= 1.0 - shadow * 0.72;
 
   float vignette = smoothstep(1.25, 0.12, length(uv * vec2(0.85, 1.0)));
   col *= 0.38 + 0.82 * vignette;
