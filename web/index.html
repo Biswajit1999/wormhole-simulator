@@ -3,20 +3,20 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>wormhole-sim | High-definition physics simulation platform</title>
+<title>wormhole-sim | cinematic relativistic lensing</title>
 <style>
   :root {
-    --bg: #050505;
-    --panel: #101111;
-    --panel-2: #171817;
-    --ink: #f4efe4;
-    --muted: #a7aaa1;
-    --line: #30342f;
-    --teal: #63e0ca;
-    --amber: #e7b66d;
-    --red: #ff6f61;
-    --green: #9edb7d;
-    --shadow: rgba(0, 0, 0, 0.42);
+    --bg: #010102;
+    --ink: #f8f5ed;
+    --muted: #b5b5ad;
+    --panel: rgba(8, 9, 10, 0.66);
+    --panel-strong: rgba(8, 9, 10, 0.86);
+    --line: rgba(255, 255, 255, 0.14);
+    --line-strong: rgba(255, 255, 255, 0.24);
+    --amber: #f2bf72;
+    --cyan: #8ce8dd;
+    --red: #ff7d68;
+    --green: #a8e183;
   }
 
   * {
@@ -29,7 +29,7 @@
     min-height: 100%;
     background: var(--bg);
     color: var(--ink);
-    font: 16px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    font: 15px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
       "Segoe UI", sans-serif;
   }
 
@@ -48,54 +48,77 @@
     text-decoration: none;
   }
 
-  .platform {
-    min-height: 100svh;
-    background: #050505;
-  }
-
-  .console {
-    min-height: 100svh;
-    display: grid;
-    grid-template-columns: minmax(320px, 390px) minmax(0, 1fr);
-  }
-
-  .controls {
+  .stage {
     position: relative;
     z-index: 2;
-    display: flex;
     min-height: 100svh;
-    flex-direction: column;
-    gap: 18px;
-    padding: 22px;
-    background: var(--panel);
-    background: color-mix(in srgb, var(--panel) 94%, black);
-    border-right: 1px solid var(--line);
-    box-shadow: 18px 0 60px var(--shadow);
+    overflow: hidden;
   }
 
-  .brand {
+  #scene {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: #010102;
+  }
+
+  .shade {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.24) 42%, rgba(0, 0, 0, 0.42)),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.56), transparent 34%, rgba(0, 0, 0, 0.72));
+  }
+
+  .hero {
+    position: relative;
+    z-index: 2;
+    min-height: 100svh;
     display: grid;
-    gap: 8px;
+    grid-template-rows: auto 1fr auto;
+    padding: 24px;
   }
 
-  .eyebrow {
-    display: inline-flex;
+  .topbar,
+  .panel,
+  .readouts,
+  .view-card,
+  footer {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    box-shadow: 0 22px 80px rgba(0, 0, 0, 0.36);
+    backdrop-filter: blur(18px);
+  }
+
+  .topbar {
     width: fit-content;
+    max-width: min(560px, 100%);
+    padding: 16px 18px;
+    border-radius: 8px;
+  }
+
+  .signal {
+    display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: var(--teal);
+    color: var(--cyan);
     font-size: 0.76rem;
     font-weight: 800;
-    letter-spacing: 0.11em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
 
-  .pulse {
+  .dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: var(--green);
-    box-shadow: 0 0 18px var(--green);
+    box-shadow: 0 0 22px var(--green);
   }
 
   h1,
@@ -106,31 +129,34 @@
   }
 
   h1 {
-    font-size: 2.05rem;
-    line-height: 1.05;
-    font-weight: 850;
+    margin-top: 8px;
+    font-size: clamp(2.35rem, 5.6vw, 4.9rem);
+    line-height: 0.92;
+    letter-spacing: 0;
+    font-weight: 900;
+    white-space: nowrap;
   }
 
-  .lede {
+  .subtitle {
+    max-width: 48rem;
+    margin-top: 12px;
     color: var(--muted);
-    max-width: 31rem;
+    font-size: clamp(0.98rem, 1.4vw, 1.16rem);
   }
 
-  .control-group {
+  .control-row {
+    align-self: end;
     display: grid;
-    gap: 12px;
-    padding: 14px;
-    background: var(--panel-2);
-    border: 1px solid var(--line);
-    border-radius: 8px;
+    grid-template-columns: minmax(300px, 430px) minmax(250px, 360px);
+    gap: 14px;
+    align-items: end;
   }
 
-  .group-title {
-    color: var(--amber);
-    font-size: 0.76rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .panel {
+    display: grid;
+    gap: 14px;
+    padding: 14px;
+    border-radius: 8px;
   }
 
   .mode-tabs {
@@ -140,30 +166,36 @@
   }
 
   .mode-tabs button,
-  .nav-link,
-  .action-button {
+  .button-link,
+  .pause {
     min-height: 38px;
     border: 1px solid var(--line);
     border-radius: 8px;
-    background: #0b0c0b;
     color: var(--ink);
+    background: rgba(255, 255, 255, 0.045);
     cursor: pointer;
-    transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
   }
 
   .mode-tabs button[aria-pressed="true"] {
-    color: #171000;
-    background: var(--amber);
+    color: #130d04;
     border-color: var(--amber);
+    background: var(--amber);
   }
 
   .mode-tabs button:focus-visible,
-  .nav-link:focus-visible,
-  .action-button:focus-visible,
+  .button-link:focus-visible,
+  .pause:focus-visible,
   select:focus-visible,
   input:focus-visible {
-    outline: 2px solid var(--teal);
+    outline: 2px solid var(--cyan);
     outline-offset: 2px;
+  }
+
+  .fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
 
   .field {
@@ -171,57 +203,79 @@
     gap: 6px;
   }
 
-  .field-row {
+  .field-wide {
+    grid-column: 1 / -1;
+  }
+
+  .label-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
     color: var(--muted);
-    font-size: 0.86rem;
+    font-size: 0.82rem;
   }
 
-  .field output {
+  output {
     color: var(--ink);
     font-variant-numeric: tabular-nums;
   }
 
   select {
+    min-height: 38px;
     width: 100%;
-    min-height: 40px;
     color: var(--ink);
-    background: #0b0c0b;
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--line);
     border-radius: 8px;
-    padding: 0 12px;
+    padding: 0 10px;
   }
 
   input[type="range"] {
     width: 100%;
-    accent-color: var(--teal);
+    accent-color: var(--cyan);
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .button-link,
+  .pause {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    text-align: center;
   }
 
   .readouts {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 1px;
+    padding: 1px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--line);
   }
 
   .readout {
-    min-height: 74px;
+    min-height: 72px;
     display: grid;
     align-content: center;
     gap: 4px;
-    padding: 11px;
-    background: #0b0c0b;
-    border: 1px solid var(--line);
-    border-radius: 8px;
+    padding: 12px;
+    background: var(--panel-strong);
   }
 
   .readout span {
     color: var(--muted);
-    font-size: 0.74rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
   }
 
   .readout strong {
@@ -229,106 +283,49 @@
     font-variant-numeric: tabular-nums;
   }
 
-  .link-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: auto;
-  }
-
-  .nav-link,
-  .action-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 0 12px;
-    text-align: center;
-  }
-
-  .action-button {
-    width: 100%;
-  }
-
-  .viewport {
-    position: relative;
-    min-width: 0;
-    min-height: 100svh;
-    overflow: hidden;
-    background: #030303;
-  }
-
-  #sim {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-
-  .topline {
-    position: absolute;
-    top: 20px;
-    left: 22px;
-    right: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    pointer-events: none;
-  }
-
-  .chip-row {
+  .chips {
+    position: fixed;
+    z-index: 3;
+    top: 24px;
+    right: 24px;
     display: flex;
     flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 8px;
+    pointer-events: none;
   }
 
   .chip {
+    min-height: 30px;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    min-height: 30px;
     padding: 0 11px;
     color: var(--ink);
-    background: rgba(12, 13, 12, 0.76);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(8, 9, 10, 0.62);
+    border: 1px solid var(--line);
     border-radius: 999px;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(14px);
     font-size: 0.78rem;
   }
 
-  .scope {
-    position: absolute;
-    right: 22px;
-    bottom: 22px;
-    width: min(420px, calc(100% - 44px));
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    pointer-events: none;
-  }
-
-  .scope .readout {
-    background: rgba(12, 13, 12, 0.76);
-    border-color: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(10px);
-  }
-
-  .lab-band {
+  .below {
+    position: relative;
+    z-index: 2;
     display: grid;
     gap: 22px;
     max-width: 1180px;
     margin: 0 auto;
-    padding: 56px 22px 70px;
+    padding: 58px 24px 72px;
   }
 
   .section-head {
+    max-width: 760px;
     display: grid;
     gap: 8px;
-    max-width: 720px;
   }
 
   .section-head h2 {
-    font-size: 1.55rem;
+    font-size: 1.62rem;
   }
 
   .section-head p {
@@ -342,13 +339,11 @@
   }
 
   .view-card {
-    min-height: 188px;
+    min-height: 190px;
     display: grid;
     align-content: end;
     gap: 8px;
     padding: 16px;
-    background: #111211;
-    border: 1px solid var(--line);
     border-radius: 8px;
     overflow: hidden;
     position: relative;
@@ -359,557 +354,492 @@
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(120deg, rgba(99, 224, 202, 0.16), transparent 34%),
-      repeating-linear-gradient(90deg, transparent 0 16px, rgba(255, 255, 255, 0.04) 17px 18px);
-    opacity: 0.72;
+      radial-gradient(circle at 50% 22%, rgba(242, 191, 114, 0.22), transparent 34%),
+      radial-gradient(circle at 62% 42%, rgba(140, 232, 221, 0.15), transparent 34%);
+    opacity: 0.9;
   }
 
   .view-card > * {
     position: relative;
   }
 
-  .view-card h3 {
-    font-size: 1.08rem;
-  }
-
   .view-card p {
     color: var(--muted);
-    font-size: 0.92rem;
   }
 
   footer {
-    border-top: 1px solid var(--line);
-    padding: 26px 22px;
+    position: relative;
+    z-index: 2;
+    margin: 0 24px 24px;
+    padding: 18px 20px;
+    border-radius: 8px;
     color: var(--muted);
     text-align: center;
-    font-size: 0.88rem;
   }
 
-  @media (max-width: 960px) {
-    .console {
-      grid-template-columns: 1fr;
-    }
-
-    .controls {
+  @media (max-width: 980px) {
+    .hero {
       min-height: auto;
-      border-right: 0;
-      border-bottom: 1px solid var(--line);
+      gap: 42svh;
+      padding: 18px;
     }
 
-    .viewport {
-      min-height: 72svh;
+    .chips {
+      position: relative;
+      top: auto;
+      right: auto;
+      justify-content: flex-start;
+      margin: 0 18px 18px;
     }
 
+    .control-row,
     .view-grid {
       grid-template-columns: 1fr;
     }
   }
 
   @media (max-width: 620px) {
+    .hero {
+      gap: 34svh;
+    }
+
+    .topbar,
+    .panel,
+    .readouts {
+      width: 100%;
+    }
+
     h1 {
-      font-size: 1.72rem;
+      white-space: normal;
     }
 
-    .controls {
-      padding: 16px;
-    }
-
-    .mode-tabs,
-    .link-grid,
-    .readouts,
-    .scope {
+    .fields,
+    .actions,
+    .readouts {
       grid-template-columns: 1fr;
-    }
-
-    .topline {
-      align-items: flex-start;
-      flex-direction: column;
     }
   }
 </style>
 </head>
 <body>
-<main class="platform">
-  <section class="console" aria-label="Wormhole simulation console">
-    <aside class="controls">
-      <div class="brand">
-        <div class="eyebrow"><span class="pulse"></span>Live physics renderer</div>
-        <h1>wormhole-sim</h1>
-        <p class="lede">A high-definition simulation console for lensing, embedding geometry, exotic matter, and ringdown diagnostics.</p>
-      </div>
+<canvas id="scene" aria-label="Cinematic wormhole lensing simulation"></canvas>
+<div class="shade"></div>
 
-      <div class="control-group">
-        <div class="group-title">Simulation mode</div>
-        <div class="mode-tabs" role="group" aria-label="Simulation mode">
-          <button type="button" data-mode="lensing" aria-pressed="true">Lensing</button>
-          <button type="button" data-mode="embedding" aria-pressed="false">Embedding</button>
-          <button type="button" data-mode="curvature" aria-pressed="false">Curvature</button>
+<main class="stage">
+  <div class="chips">
+    <span class="chip" id="modeChip">Cinematic lensing</span>
+    <span class="chip" id="metricChip">Ellis-Bronnikov</span>
+    <span class="chip" id="fps">60 fps</span>
+  </div>
+
+  <section class="hero" aria-label="Wormhole simulation">
+    <header class="topbar">
+      <div class="signal"><span class="dot"></span>Live relativistic lensing</div>
+      <h1>wormhole-sim</h1>
+      <p class="subtitle">Cinematic browser visualization driven by the same metric families used by the Python research toolkit.</p>
+    </header>
+
+    <div></div>
+
+    <div class="control-row">
+      <section class="panel" aria-label="Simulation controls">
+        <div class="mode-tabs" role="group" aria-label="View mode">
+          <button type="button" data-mode="cinematic" aria-pressed="true">Cinematic</button>
+          <button type="button" data-mode="rays" aria-pressed="false">Ray field</button>
+          <button type="button" data-mode="geometry" aria-pressed="false">Geometry</button>
         </div>
-        <div class="field">
-          <label class="field-row" for="metric"><span>Metric family</span></label>
-          <select id="metric">
-            <option value="ellis">Ellis-Bronnikov</option>
-            <option value="morris">Morris-Thorne</option>
-            <option value="teo">Teo rotating</option>
-          </select>
+
+        <div class="fields">
+          <label class="field field-wide">
+            <span class="label-row"><span>Metric family</span></span>
+            <select id="metric">
+              <option value="0">Ellis-Bronnikov</option>
+              <option value="1">Morris-Thorne</option>
+              <option value="2">Teo rotating</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="label-row"><span>Throat radius</span><output id="b0Out">1.18</output></span>
+            <input id="b0" type="range" min="0.65" max="2.8" step="0.01" value="1.18" />
+          </label>
+          <label class="field">
+            <span class="label-row"><span>Frame dragging</span><output id="spinOut">0.38</output></span>
+            <input id="spin" type="range" min="0" max="1" step="0.01" value="0.38" />
+          </label>
+          <label class="field">
+            <span class="label-row"><span>Lens strength</span><output id="lensOut">0.82</output></span>
+            <input id="lens" type="range" min="0.35" max="1.35" step="0.01" value="0.82" />
+          </label>
+          <label class="field">
+            <span class="label-row"><span>Exposure</span><output id="exposureOut">1.08</output></span>
+            <input id="exposure" type="range" min="0.45" max="1.45" step="0.01" value="1.08" />
+          </label>
         </div>
-      </div>
 
-      <div class="control-group">
-        <div class="group-title">Parameters</div>
-        <label class="field">
-          <span class="field-row"><span>Throat radius b0</span><output id="b0Out">1.20</output></span>
-          <input id="b0" type="range" min="0.6" max="3.0" step="0.05" value="1.2" />
-        </label>
-        <label class="field">
-          <span class="field-row"><span>Frame dragging</span><output id="spinOut">0.32</output></span>
-          <input id="spin" type="range" min="0" max="0.9" step="0.01" value="0.32" />
-        </label>
-        <label class="field">
-          <span class="field-row"><span>Exposure</span><output id="exposureOut">0.76</output></span>
-          <input id="exposure" type="range" min="0.35" max="1.2" step="0.01" value="0.76" />
-        </label>
-        <label class="field">
-          <span class="field-row"><span>Render scale</span><output id="scaleOut">2.0x</output></span>
-          <input id="scale" type="range" min="1" max="2.5" step="0.1" value="2" />
-        </label>
-      </div>
-
-      <div class="control-group">
-        <div class="group-title">Live diagnostics</div>
-        <div class="readouts">
-          <div class="readout"><span>Deflection</span><strong id="deflection">42.8 deg</strong></div>
-          <div class="readout"><span>NEC min</span><strong id="nec">-0.0276</strong></div>
-          <div class="readout"><span>Curvature</span><strong id="curvature">8.33</strong></div>
-          <div class="readout"><span>QNM</span><strong id="qnm">1.69 - 0.21i</strong></div>
+        <div class="actions">
+          <button class="pause" id="pause" type="button">Pause</button>
+          <a class="button-link" href="realtime.html">Ray tracer</a>
+          <a class="button-link" href="embedding3d.html">3D throat</a>
         </div>
-      </div>
+      </section>
 
-      <button class="action-button" id="pause" type="button">Pause render</button>
-
-      <div class="link-grid" aria-label="Simulation views">
-        <a class="nav-link" href="realtime.html">Real-time lensing</a>
-        <a class="nav-link" href="embedding3d.html">3D embedding</a>
-        <a class="nav-link" href="../README.md">README</a>
-        <a class="nav-link" href="../docs/mathematical_foundations.md">Theory</a>
-      </div>
-    </aside>
-
-    <div class="viewport">
-      <canvas id="sim" aria-label="Animated wormhole simulation render"></canvas>
-      <div class="topline">
-        <div class="chip-row">
-          <span class="chip">HD canvas</span>
-          <span class="chip" id="modeChip">Lensing</span>
-          <span class="chip" id="metricChip">Ellis-Bronnikov</span>
-        </div>
-        <span class="chip" id="fps">60 fps</span>
-      </div>
-      <div class="scope">
-        <div class="readout"><span>Observer</span><strong id="observer">+8.0 l</strong></div>
-        <div class="readout"><span>Ray samples</span><strong id="samples">1400</strong></div>
-      </div>
+      <section class="readouts" aria-label="Live diagnostics">
+        <div class="readout"><span>Deflection</span><strong id="deflection">57.1 deg</strong></div>
+        <div class="readout"><span>NEC min</span><strong id="nec">-0.0286</strong></div>
+        <div class="readout"><span>Curvature</span><strong id="curvature">8.62</strong></div>
+        <div class="readout"><span>Ringdown</span><strong id="qnm">2.03 - 0.21i</strong></div>
+      </section>
     </div>
   </section>
 
-  <section class="lab-band">
+  <section class="below">
     <div class="section-head">
-      <h2>Audience-ready simulation views</h2>
-      <p>The static site ships with browser-native physics visuals, while the Python package keeps the same metric families available for tested research workflows.</p>
+      <h2>Simulation views</h2>
+      <p>The public demo prioritizes realistic lensing, while the supporting views expose the geometric and numerical machinery behind it.</p>
     </div>
     <div class="view-grid">
       <a class="view-card" href="realtime.html">
         <h3>Geodesic ray tracer</h3>
-        <p>Real-time Ellis wormhole lensing with a procedural star field and throat traversal.</p>
+        <p>Shader-based Ellis wormhole view with camera motion through the throat.</p>
       </a>
       <a class="view-card" href="embedding3d.html">
         <h3>Embedding surface</h3>
-        <p>Orbit and zoom through Morris-Thorne and Ellis throat geometry in 3D.</p>
+        <p>Orbit and zoom through Morris-Thorne and Ellis throat geometry.</p>
       </a>
-      <a class="view-card" href="../docs/architecture.md">
-        <h3>Research pipeline</h3>
-        <p>Metrics, curvature, energy conditions, geodesics, QNM, and visualization modules.</p>
+      <a class="view-card" href="../README.md">
+        <h3>Research report</h3>
+        <p>Equations, validation, references, install steps, and citation details.</p>
       </a>
     </div>
   </section>
 </main>
-<footer>wormhole-sim | MIT | relativistic wormhole simulation framework</footer>
+
+<footer>wormhole-sim | Biswajit Jana | MIT | relativistic wormhole simulation framework</footer>
+
+<script id="vertexShader" type="x-shader/x-vertex">
+attribute vec2 aPosition;
+void main() {
+  gl_Position = vec4(aPosition, 0.0, 1.0);
+}
+</script>
+
+<script id="fragmentShader" type="x-shader/x-fragment">
+precision highp float;
+
+uniform vec2 uResolution;
+uniform float uTime;
+uniform float uB0;
+uniform float uSpin;
+uniform float uLens;
+uniform float uExposure;
+uniform float uMode;
+uniform float uMetric;
+
+const float PI = 3.141592653589793;
+
+float hash21(vec2 p) {
+  p = fract(p * vec2(123.34, 456.21));
+  p += dot(p, p + 45.32);
+  return fract(p.x * p.y);
+}
+
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = hash21(i);
+  float b = hash21(i + vec2(1.0, 0.0));
+  float c = hash21(i + vec2(0.0, 1.0));
+  float d = hash21(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+mat2 rot(float a) {
+  float s = sin(a);
+  float c = cos(a);
+  return mat2(c, -s, s, c);
+}
+
+float starLayer(vec2 p, float scale, float threshold) {
+  vec2 q = p * scale;
+  vec2 cell = floor(q);
+  vec2 local = fract(q) - 0.5;
+  float rnd = hash21(cell);
+  vec2 offset = vec2(hash21(cell + 12.4), hash21(cell + 78.2)) - 0.5;
+  float d = length(local - offset * 0.58);
+  float star = smoothstep(0.045, 0.0, d) * smoothstep(threshold, 1.0, rnd);
+  return star * (0.4 + 0.9 * rnd);
+}
+
+vec3 sky(vec2 p, float side) {
+  vec2 q = p;
+  q *= rot(0.22 * side + 0.035 * sin(uTime * 0.07));
+  float bandY = q.y + 0.24 * sin(q.x * 1.22 + side * 1.7);
+  float band = exp(-bandY * bandY * 8.2);
+  float dust = noise(q * 2.8 + side * 8.0) * 0.55 + noise(q * 7.0) * 0.24;
+  vec3 cold = vec3(0.012, 0.018, 0.037);
+  vec3 warm = side > 0.0 ? vec3(0.22, 0.25, 0.38) : vec3(0.42, 0.24, 0.12);
+  vec3 nebula = mix(cold, warm, band * (0.45 + dust));
+  float stars =
+    starLayer(q + side * 4.0, 58.0, 0.948) +
+    starLayer(q * 1.7 + 19.0, 116.0, 0.974) +
+    starLayer(q * 2.4 - 9.0, 210.0, 0.986);
+  vec3 starColor = mix(vec3(0.7, 0.9, 1.0), vec3(1.0, 0.72, 0.42), noise(q * 9.0));
+  return nebula + stars * starColor * 1.25;
+}
+
+float lineField(vec2 uv, float r, float a) {
+  float rays = 0.0;
+  for (int i = 0; i < 14; i++) {
+    float fi = float(i);
+    float phase = fi * 0.73 + uTime * 0.1;
+    float curve = sin(a * 2.0 + phase) * 0.13 + 0.16 / (r + 0.14);
+    float v = abs(sin(a * 8.0 + r * 7.0 + curve + fi));
+    rays += smoothstep(0.035, 0.0, v) * smoothstep(1.35, 0.05, r);
+  }
+  return clamp(rays * 0.18, 0.0, 1.0);
+}
+
+float geometryGrid(vec2 uv) {
+  vec2 p = uv;
+  float rr = length(p);
+  float aa = atan(p.y, p.x);
+  float radial = abs(fract(rr * 7.0 - uTime * 0.025) - 0.5);
+  float angular = abs(fract(aa / (2.0 * PI) * 28.0 + 0.015 * sin(rr * 9.0)) - 0.5);
+  float grid = smoothstep(0.03, 0.0, radial) + smoothstep(0.025, 0.0, angular);
+  return clamp(grid * smoothstep(1.45, 0.18, rr), 0.0, 1.0);
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * uResolution.xy) / uResolution.y;
+  uv.x -= 0.22;
+  float r = length(uv);
+  float a = atan(uv.y, uv.x);
+
+  float metricBoost = 1.0 + 0.12 * uMetric;
+  float throat = 0.185 + 0.032 * uB0;
+  float spin = uSpin * (0.35 + 0.18 * uMetric);
+  vec2 swirlUv = rot(spin * exp(-r * 1.35) + 0.015 * uTime) * uv;
+
+  float bend = uLens * metricBoost * (0.08 + 0.055 * uB0) / (r * r + 0.032);
+  vec2 lensed = swirlUv * (1.0 + bend);
+  vec3 nearSky = sky(lensed * 1.58 + vec2(0.05 * uTime, 0.0), 1.0);
+
+  vec2 portalUv = uv / max(throat, 0.001);
+  float portalDepth = dot(portalUv, portalUv);
+  vec2 farUv = portalUv / (0.22 + portalDepth);
+  farUv = rot(0.8 + spin * 2.2 - 0.025 * uTime) * farUv;
+  farUv += 0.08 * vec2(sin(uTime * 0.15 + portalDepth * 4.0), cos(uTime * 0.13 + portalDepth * 3.0));
+  vec3 farSky = sky(farUv * 1.72, -1.0);
+  farSky *= 0.42 + 0.58 * smoothstep(0.05, throat, r);
+
+  float inside = smoothstep(throat + 0.012, throat - 0.012, r);
+  vec3 col = mix(nearSky, farSky, inside);
+
+  float ring = exp(-pow((r - throat) / 0.010, 2.0));
+  float ringOuter = exp(-pow((r - throat * 1.42) / 0.042, 2.0));
+  float photon = exp(-pow((r - throat * 0.74) / 0.012, 2.0));
+  vec3 ringColor = vec3(1.55, 1.08, 0.62) * ring + vec3(0.32, 0.85, 0.95) * ringOuter;
+  col += ringColor * (1.1 + 0.45 * uLens);
+  col += vec3(0.95, 0.74, 0.46) * photon * 0.26;
+
+  float diskTilt = uv.y + 0.045 * sin(uv.x * 3.2 + uTime * 0.16);
+  float diskBand = exp(-pow(diskTilt / (0.021 + 0.004 * uB0), 2.0));
+  float diskMask = smoothstep(throat * 0.76, throat * 1.2, abs(uv.x)) * smoothstep(1.18, 0.05, r);
+  float front = smoothstep(-0.035, 0.10, uv.y);
+  vec3 diskColor = mix(vec3(1.0, 0.34, 0.12), vec3(1.0, 0.82, 0.42), smoothstep(-0.4, 0.7, uv.x));
+  col += diskColor * diskBand * diskMask * (0.38 + 0.62 * front) * (0.8 + 0.4 * uExposure);
+
+  float rays = lineField(uv, r, a);
+  float grid = geometryGrid(uv);
+  col += vec3(0.55, 0.95, 1.0) * rays * smoothstep(0.4, 1.4, uMode);
+  col += vec3(0.75, 0.95, 1.0) * grid * smoothstep(1.6, 2.2, uMode) * 0.65;
+
+  float shadow = smoothstep(throat * 0.64, throat * 0.28, r);
+  col *= 1.0 - shadow * 0.58;
+
+  float vignette = smoothstep(1.25, 0.12, length(uv * vec2(0.85, 1.0)));
+  col *= 0.38 + 0.82 * vignette;
+  col *= uExposure;
+  col = col / (col + vec3(1.0));
+  col = pow(col, vec3(0.82));
+
+  gl_FragColor = vec4(col, 1.0);
+}
+</script>
 
 <script>
 (() => {
-  const canvas = document.getElementById("sim");
-  const ctx = canvas.getContext("2d", { alpha: false });
-  const modeButtons = [...document.querySelectorAll("[data-mode]")];
-  const metricSelect = document.getElementById("metric");
+  const canvas = document.getElementById("scene");
+  const gl = canvas.getContext("webgl", { antialias: false, alpha: false });
   const controls = {
+    metric: document.getElementById("metric"),
     b0: document.getElementById("b0"),
     spin: document.getElementById("spin"),
-    exposure: document.getElementById("exposure"),
-    scale: document.getElementById("scale")
+    lens: document.getElementById("lens"),
+    exposure: document.getElementById("exposure")
   };
   const out = {
     b0: document.getElementById("b0Out"),
     spin: document.getElementById("spinOut"),
+    lens: document.getElementById("lensOut"),
     exposure: document.getElementById("exposureOut"),
-    scale: document.getElementById("scaleOut"),
     deflection: document.getElementById("deflection"),
     nec: document.getElementById("nec"),
     curvature: document.getElementById("curvature"),
     qnm: document.getElementById("qnm"),
     fps: document.getElementById("fps"),
-    observer: document.getElementById("observer"),
-    samples: document.getElementById("samples"),
     modeChip: document.getElementById("modeChip"),
     metricChip: document.getElementById("metricChip")
   };
+  const modeButtons = [...document.querySelectorAll("[data-mode]")];
   const pauseButton = document.getElementById("pause");
-
-  const metricLabels = {
-    ellis: "Ellis-Bronnikov",
-    morris: "Morris-Thorne",
-    teo: "Teo rotating"
-  };
-  const state = {
-    mode: "lensing",
-    metric: "ellis",
-    b0: 1.2,
-    spin: 0.32,
-    exposure: 0.76,
-    scale: 2,
-    paused: false,
-    t: 0
+  const metricNames = ["Ellis-Bronnikov", "Morris-Thorne", "Teo rotating"];
+  const modeNames = {
+    cinematic: "Cinematic lensing",
+    rays: "Ray-field overlay",
+    geometry: "Geometry overlay"
   };
 
-  const stars = Array.from({ length: 1400 }, (_, i) => {
-    const a = (i * 2.399963229728653) % (Math.PI * 2);
-    const r = Math.sqrt(((i * 37) % 997) / 997);
-    const warm = i % 5 === 0;
-    return {
-      x: Math.cos(a) * r,
-      y: Math.sin(a) * r,
-      z: ((i * 53) % 100) / 100,
-      s: 0.45 + (((i * 29) % 100) / 100) * 1.8,
-      color: warm ? "rgba(231,182,109," : "rgba(182,245,233,"
-    };
-  });
-
-  let cssWidth = 1;
-  let cssHeight = 1;
-  let dpr = 1;
-  let lastFrame = performance.now();
-  let fps = 60;
-
-  function resize() {
-    const rect = canvas.getBoundingClientRect();
-    cssWidth = Math.max(1, rect.width);
-    cssHeight = Math.max(1, rect.height);
-    dpr = Math.min(window.devicePixelRatio || 1, state.scale);
-    canvas.width = Math.round(cssWidth * dpr);
-    canvas.height = Math.round(cssHeight * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (!gl) {
+    document.body.classList.add("no-webgl");
+    throw new Error("WebGL is required for the cinematic renderer.");
   }
 
-  function updateState() {
-    state.metric = metricSelect.value;
-    state.b0 = Number(controls.b0.value);
-    state.spin = Number(controls.spin.value);
-    state.exposure = Number(controls.exposure.value);
-    const newScale = Number(controls.scale.value);
-    if (newScale !== state.scale) {
-      state.scale = newScale;
-      resize();
+  function shader(type, source) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, source);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      throw new Error(gl.getShaderInfoLog(s));
     }
+    return s;
+  }
 
-    out.b0.value = state.b0.toFixed(2);
-    out.spin.value = state.spin.toFixed(2);
-    out.exposure.value = state.exposure.toFixed(2);
-    out.scale.value = state.scale.toFixed(1) + "x";
-    out.modeChip.textContent = state.mode[0].toUpperCase() + state.mode.slice(1);
-    out.metricChip.textContent = metricLabels[state.metric];
-    out.samples.textContent = String(stars.length);
+  const program = gl.createProgram();
+  gl.attachShader(program, shader(gl.VERTEX_SHADER, document.getElementById("vertexShader").textContent));
+  gl.attachShader(program, shader(gl.FRAGMENT_SHADER, document.getElementById("fragmentShader").textContent));
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    throw new Error(gl.getProgramInfoLog(program));
+  }
+  gl.useProgram(program);
 
-    const metricSpin = state.metric === "teo" ? 1 + state.spin * 0.7 : 1;
-    const impact = 2.1 + (1.25 - state.exposure) * 1.4;
-    const alpha = Math.min(178, (2 * Math.atan((state.b0 * state.b0) / impact)) * 180 / Math.PI * metricSpin);
-    const nec = -1 / (8 * Math.PI * state.b0 * state.b0);
-    const curvature = 12 / (state.b0 * state.b0);
-    const qReal = Math.sqrt(5.75) / state.b0;
-    const qImag = 0.25 / state.b0;
-    const observer = 8 + Math.sin(state.t * 0.00022) * 2.6;
+  const buffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+    -1, -1,
+     1, -1,
+    -1,  1,
+    -1,  1,
+     1, -1,
+     1,  1
+  ]), gl.STATIC_DRAW);
+  const position = gl.getAttribLocation(program, "aPosition");
+  gl.enableVertexAttribArray(position);
+  gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
+  const uniforms = {
+    resolution: gl.getUniformLocation(program, "uResolution"),
+    time: gl.getUniformLocation(program, "uTime"),
+    b0: gl.getUniformLocation(program, "uB0"),
+    spin: gl.getUniformLocation(program, "uSpin"),
+    lens: gl.getUniformLocation(program, "uLens"),
+    exposure: gl.getUniformLocation(program, "uExposure"),
+    mode: gl.getUniformLocation(program, "uMode"),
+    metric: gl.getUniformLocation(program, "uMetric")
+  };
+
+  const state = {
+    mode: "cinematic",
+    paused: false,
+    time: 0,
+    fps: 60,
+    last: performance.now()
+  };
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.floor(window.innerWidth * dpr));
+    const height = Math.max(1, Math.floor(window.innerHeight * dpr));
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+      gl.viewport(0, 0, width, height);
+    }
+  }
+
+  function values() {
+    return {
+      metric: Number(controls.metric.value),
+      b0: Number(controls.b0.value),
+      spin: Number(controls.spin.value),
+      lens: Number(controls.lens.value),
+      exposure: Number(controls.exposure.value),
+      mode: state.mode === "cinematic" ? 0 : state.mode === "rays" ? 1 : 2
+    };
+  }
+
+  function updateReadouts() {
+    const v = values();
+    out.b0.value = v.b0.toFixed(2);
+    out.spin.value = v.spin.toFixed(2);
+    out.lens.value = v.lens.toFixed(2);
+    out.exposure.value = v.exposure.toFixed(2);
+    out.metricChip.textContent = metricNames[v.metric];
+    out.modeChip.textContent = modeNames[state.mode];
+
+    const metricBoost = 1 + 0.13 * v.metric;
+    const impact = 1.75 + (1.35 - v.lens) * 1.2;
+    const alpha = Math.min(176, (2 * Math.atan((v.b0 * v.b0 * v.lens * metricBoost) / impact)) * 180 / Math.PI);
+    const nec = -1 / (8 * Math.PI * v.b0 * v.b0);
+    const curvature = 12 / (v.b0 * v.b0) * metricBoost;
+    const qReal = Math.sqrt(5.75) / v.b0 * metricBoost;
+    const qImag = 0.25 / v.b0;
     out.deflection.textContent = alpha.toFixed(1) + " deg";
     out.nec.textContent = nec.toFixed(4);
     out.curvature.textContent = curvature.toFixed(2);
     out.qnm.textContent = qReal.toFixed(2) + " - " + qImag.toFixed(2) + "i";
-    out.observer.textContent = (observer >= 0 ? "+" : "") + observer.toFixed(1) + " l";
   }
 
-  function clear() {
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = "#030303";
-    ctx.fillRect(0, 0, cssWidth, cssHeight);
-  }
-
-  function drawBackgroundGrid(cx, cy, time) {
-    ctx.save();
-    ctx.globalAlpha = 0.26;
-    ctx.strokeStyle = "rgba(99, 224, 202, 0.22)";
-    ctx.lineWidth = 1;
-    const spacing = Math.max(34, Math.min(cssWidth, cssHeight) / 16);
-    for (let x = -spacing; x < cssWidth + spacing; x += spacing) {
-      ctx.beginPath();
-      ctx.moveTo(x + Math.sin(time + x * 0.01) * 5, 0);
-      ctx.lineTo(x - (cx - x) * 0.05, cssHeight);
-      ctx.stroke();
-    }
-    for (let y = -spacing; y < cssHeight + spacing; y += spacing) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.quadraticCurveTo(cx, y + (cy - y) * 0.18, cssWidth, y);
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  function drawLensing(time) {
-    const cx = cssWidth * 0.55;
-    const cy = cssHeight * 0.48;
-    const radius = Math.min(cssWidth, cssHeight) * (0.135 + state.b0 * 0.026);
-    const lens = 0.38 + state.b0 * 0.11 + state.exposure * 0.18;
-    drawBackgroundGrid(cx, cy, time * 0.00012);
-
-    for (const star of stars) {
-      const drift = time * 0.000018 * (0.3 + state.spin);
-      const sx = cx + (star.x * Math.cos(drift) - star.y * Math.sin(drift)) * cssWidth * 0.58;
-      const sy = cy + (star.x * Math.sin(drift) + star.y * Math.cos(drift)) * cssHeight * 0.58;
-      const dx = sx - cx;
-      const dy = sy - cy;
-      const dist = Math.sqrt(dx * dx + dy * dy) + 1;
-      const bend = 1 + lens * radius * radius / (dist * dist + radius * 58);
-      const px = cx + dx * bend;
-      const py = cy + dy * bend;
-      if (px < -8 || px > cssWidth + 8 || py < -8 || py > cssHeight + 8) continue;
-      const alpha = Math.min(0.96, 0.26 + star.z * 0.6 + state.exposure * 0.22);
-      ctx.fillStyle = star.color + alpha + ")";
-      ctx.beginPath();
-      ctx.arc(px, py, star.s, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(time * 0.00015 * (0.4 + state.spin));
-    for (let i = 0; i < 10; i++) {
-      const r = radius * (1.05 + i * 0.18);
-      ctx.strokeStyle = i % 2 ? "rgba(231,182,109,0.22)" : "rgba(99,224,202,0.28)";
-      ctx.lineWidth = 1.1;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, r * 1.32, r * 0.68, i * 0.18, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    ctx.restore();
-
-    for (let i = -5; i <= 5; i++) {
-      const y = cy + i * radius * 0.34;
-      ctx.strokeStyle = i === 0 ? "rgba(231,182,109,0.72)" : "rgba(99,224,202,0.32)";
-      ctx.lineWidth = i === 0 ? 1.8 : 1;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.bezierCurveTo(cx * 0.52, y - i * 13, cx * 0.74, cy + i * 18, cssWidth, cy - i * 16);
-      ctx.stroke();
-    }
-
-    const gradient = ctx.createRadialGradient(cx, cy, radius * 0.12, cx, cy, radius * 1.45);
-    gradient.addColorStop(0, "#000000");
-    gradient.addColorStop(0.42, "rgba(8, 8, 7, 0.95)");
-    gradient.addColorStop(0.58, "rgba(231, 182, 109, 0.62)");
-    gradient.addColorStop(0.72, "rgba(99, 224, 202, 0.38)");
-    gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius * 1.55, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(244,239,228,0.78)";
-    ctx.lineWidth = 1.4;
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius * 0.52, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-
-  function project(x, y, z, time) {
-    const angle = time * 0.0002 * (0.25 + state.spin);
-    const ca = Math.cos(angle);
-    const sa = Math.sin(angle);
-    const rx = x * ca - z * sa;
-    const rz = x * sa + z * ca + 9.5;
-    const f = Math.min(cssWidth, cssHeight) * 0.75;
-    const s = f / (f + rz * 38);
-    return [cssWidth * 0.55 + rx * s * 52, cssHeight * 0.52 + y * s * 46, s];
-  }
-
-  function profile(v) {
-    const b = state.b0;
-    if (state.metric === "ellis") {
-      return { r: Math.sqrt(v * v + b * b), z: v * 0.82 };
-    }
-    const r = b + Math.abs(v) * 0.62;
-    const z = Math.sign(v || 1) * Math.sqrt(Math.max(0, r * r - b * b)) * 0.82;
-    return { r, z };
-  }
-
-  function drawEmbedding(time) {
-    const rows = 36;
-    const cols = 84;
-    const limit = 4.9;
-    ctx.save();
-    ctx.globalAlpha = 0.42;
-    drawBackgroundGrid(cssWidth * 0.55, cssHeight * 0.5, time * 0.00008);
-    ctx.restore();
-
-    for (let i = 0; i < rows; i++) {
-      const v = -limit + (2 * limit * i) / (rows - 1);
-      const p = profile(v);
-      ctx.beginPath();
-      for (let j = 0; j <= cols; j++) {
-        const a = (Math.PI * 2 * j) / cols;
-        const pt = project(Math.cos(a) * p.r, p.z, Math.sin(a) * p.r, time);
-        if (j === 0) ctx.moveTo(pt[0], pt[1]);
-        else ctx.lineTo(pt[0], pt[1]);
-      }
-      const near = 1 - Math.abs(v) / limit;
-      ctx.strokeStyle = `rgba(99, 224, 202, ${0.12 + near * 0.46})`;
-      ctx.lineWidth = 0.9 + near * 0.8;
-      ctx.stroke();
-    }
-
-    for (let j = 0; j < 18; j++) {
-      const a = (Math.PI * 2 * j) / 18;
-      ctx.beginPath();
-      for (let i = 0; i < rows; i++) {
-        const v = -limit + (2 * limit * i) / (rows - 1);
-        const p = profile(v);
-        const pt = project(Math.cos(a) * p.r, p.z, Math.sin(a) * p.r, time);
-        if (i === 0) ctx.moveTo(pt[0], pt[1]);
-        else ctx.lineTo(pt[0], pt[1]);
-      }
-      ctx.strokeStyle = "rgba(231, 182, 109, 0.22)";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
-
-    const throat = profile(0);
-    ctx.beginPath();
-    for (let j = 0; j <= cols; j++) {
-      const a = (Math.PI * 2 * j) / cols;
-      const pt = project(Math.cos(a) * throat.r, 0, Math.sin(a) * throat.r, time);
-      if (j === 0) ctx.moveTo(pt[0], pt[1]);
-      else ctx.lineTo(pt[0], pt[1]);
-    }
-    ctx.strokeStyle = "rgba(255, 111, 97, 0.92)";
-    ctx.lineWidth = 2.4;
-    ctx.stroke();
-  }
-
-  function drawCurvature(time) {
-    const cell = Math.max(9, Math.round(Math.min(cssWidth, cssHeight) / 70));
-    const cx = cssWidth * 0.55;
-    const cy = cssHeight * 0.46;
-    const scale = Math.min(cssWidth, cssHeight) * 0.22;
-    for (let y = 0; y < cssHeight; y += cell) {
-      for (let x = 0; x < cssWidth; x += cell) {
-        const dx = (x - cx) / scale;
-        const dy = (y - cy) / scale;
-        const r2 = dx * dx + dy * dy;
-        const c = (state.b0 * state.b0) / Math.pow(r2 + state.b0 * state.b0, 2);
-        const heat = Math.min(1, c * 1.9 * state.exposure);
-        const rr = Math.round(28 + heat * 220);
-        const gg = Math.round(38 + heat * 118);
-        const bb = Math.round(34 + (1 - heat) * 84);
-        ctx.fillStyle = `rgb(${rr},${gg},${bb})`;
-        ctx.fillRect(x, y, cell + 1, cell + 1);
-      }
-    }
-
-    ctx.save();
-    ctx.globalCompositeOperation = "screen";
-    for (let ring = 1; ring <= 8; ring++) {
-      const r = scale * ring * 0.22 * state.b0;
-      ctx.strokeStyle = ring % 2 ? "rgba(99,224,202,0.28)" : "rgba(231,182,109,0.26)";
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, r * 1.5, r * 0.86, time * 0.00012, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    ctx.restore();
-
-    const plotW = Math.min(620, cssWidth * 0.7);
-    const plotH = Math.min(210, cssHeight * 0.28);
-    const px = cssWidth * 0.5 - plotW * 0.42;
-    const py = cssHeight - plotH - 56;
-    ctx.fillStyle = "rgba(5, 5, 5, 0.62)";
-    ctx.strokeStyle = "rgba(244,239,228,0.16)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(px, py, plotW, plotH, 8);
-    ctx.fill();
-    ctx.stroke();
-    ctx.strokeStyle = "rgba(255,111,97,0.78)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    for (let i = 0; i < 220; i++) {
-      const x = -5 + (10 * i) / 219;
-      const potential = (6 / (x * x + state.b0 * state.b0)) - (state.b0 * state.b0) / Math.pow(x * x + state.b0 * state.b0, 2);
-      const sx = px + (i / 219) * plotW;
-      const sy = py + plotH - Math.min(1, potential / 5.6) * plotH * 0.82 - 18;
-      if (i === 0) ctx.moveTo(sx, sy);
-      else ctx.lineTo(sx, sy);
-    }
-    ctx.stroke();
-    ctx.fillStyle = "rgba(244,239,228,0.72)";
-    ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
-    ctx.fillText("Regge-Wheeler potential", px + 14, py + 24);
-  }
-
-  function draw(time) {
-    clear();
-    if (state.mode === "embedding") drawEmbedding(time);
-    else if (state.mode === "curvature") drawCurvature(time);
-    else drawLensing(time);
-  }
-
-  function loop(now) {
-    const dt = now - lastFrame;
-    lastFrame = now;
-    fps = fps * 0.88 + (1000 / Math.max(16, dt)) * 0.12;
-    out.fps.textContent = Math.round(fps) + " fps";
+  function render(now) {
+    resize();
+    const dt = now - state.last;
+    state.last = now;
+    state.fps = state.fps * 0.9 + (1000 / Math.max(16, dt)) * 0.1;
+    out.fps.textContent = Math.round(state.fps) + " fps";
     if (!state.paused) {
-      state.t = now;
-      updateState();
-      draw(now);
+      state.time = now * 0.001;
+      const v = values();
+      gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
+      gl.uniform1f(uniforms.time, state.time);
+      gl.uniform1f(uniforms.b0, v.b0);
+      gl.uniform1f(uniforms.spin, v.spin);
+      gl.uniform1f(uniforms.lens, v.lens);
+      gl.uniform1f(uniforms.exposure, v.exposure);
+      gl.uniform1f(uniforms.mode, v.mode);
+      gl.uniform1f(uniforms.metric, v.metric);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
-    requestAnimationFrame(loop);
+    requestAnimationFrame(render);
   }
 
   modeButtons.forEach((button) => {
     button.addEventListener("click", () => {
       state.mode = button.dataset.mode;
       modeButtons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
-      updateState();
-      draw(performance.now());
+      updateReadouts();
     });
   });
-
-  Object.values(controls).forEach((control) => control.addEventListener("input", updateState));
-  metricSelect.addEventListener("change", updateState);
+  Object.values(controls).forEach((control) => control.addEventListener("input", updateReadouts));
   pauseButton.addEventListener("click", () => {
     state.paused = !state.paused;
-    pauseButton.textContent = state.paused ? "Resume render" : "Pause render";
+    pauseButton.textContent = state.paused ? "Resume" : "Pause";
   });
-
   window.addEventListener("resize", resize);
-  resize();
-  updateState();
-  requestAnimationFrame(loop);
+
+  updateReadouts();
+  requestAnimationFrame(render);
 })();
 </script>
 </body>
