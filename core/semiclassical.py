@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from .compat import trapezoid
+
 
 def casimir_energy_density(plate_separation: float) -> float:
     """Negative vacuum energy density between ideal parallel plates (per unit vol).
@@ -78,7 +80,7 @@ def satisfies_quantum_inequality(energy_density, proper_time, tau0=None) -> dict
         tau0 = (tau[-1] - tau[0]) / 6.0
     tau_c = 0.5 * (tau[0] + tau[-1])
     f = (tau0 / np.pi) / ((tau - tau_c) ** 2 + tau0 ** 2)  # Lorentzian, unit area
-    sampled = float(np.trapz(energy_density * f, tau))
+    sampled = float(trapezoid(energy_density * f, tau))
     bound = -ford_roman_bound(tau0)
     return {
         "sampled_integral": sampled,

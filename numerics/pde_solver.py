@@ -21,6 +21,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
 
+from core.compat import trapezoid
+
 
 def _d2_4th(u, dx):
     """4th-order central second derivative with one-sided edges."""
@@ -97,4 +99,4 @@ class FiniteDifferenceWave:
     def energy(self, phi, phidot):
         """Discrete field energy integral( phi_t^2 + phi_l^2 ) dl (conserved diag.)."""
         phil = _d1_4th(phi, self.dx)
-        return float(np.trapz(phidot ** 2 + phil ** 2, self.l))
+        return float(trapezoid(phidot ** 2 + phil ** 2, self.l))

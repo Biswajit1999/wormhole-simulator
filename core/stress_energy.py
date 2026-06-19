@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from .compat import trapezoid
 from .metrics import Metric
 
 _FD = 1e-5
@@ -200,7 +201,7 @@ def anec_integral(metric: Metric, result) -> float:
         T = stress_energy(metric, result.coords[i])
         k = result.velocity[i]
         vals.append(float(k @ T @ k))
-    return float(np.trapz(np.asarray(vals), result.affine))
+    return float(trapezoid(np.asarray(vals), result.affine))
 
 
 def exotic_matter_integral(shape_fn, dshape_fn, r0, r_max=50.0, n=4000) -> float:
@@ -219,4 +220,4 @@ def exotic_matter_integral(shape_fn, dshape_fn, r0, r_max=50.0, n=4000) -> float
     bp = dshape_fn(rs)
     rho_pr = (bp * rs - b) / (8.0 * np.pi * rs ** 3)
     dV = 4.0 * np.pi * rs ** 2 / np.sqrt(np.clip(1.0 - b / rs, 1e-12, None))
-    return float(np.trapz(rho_pr * dV, rs))
+    return float(trapezoid(rho_pr * dV, rs))

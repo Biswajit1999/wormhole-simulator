@@ -18,6 +18,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
 
+from .compat import trapezoid
+
 __all__ = [
     "Metric",
     "MorrisThorne",
@@ -111,7 +113,7 @@ class MorrisThorne(Metric):
     def proper_radial_distance(self, r: float, n: int = 2000) -> float:
         rs = np.linspace(self.b0 * (1 + 1e-6), r, n)
         integrand = 1.0 / np.sqrt(1.0 - self.shape(rs) / rs)
-        return float(np.trapz(integrand, rs))
+        return float(trapezoid(integrand, rs))
 
     def _params_repr(self) -> str:
         return f"b0={self.b0}"

@@ -21,6 +21,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
 
+from core.compat import trapezoid
+
 from core.metrics import Metric, EllisBronnikov
 from numerics.geodesic import GeodesicSolver, null_initial_velocity
 
@@ -47,7 +49,7 @@ def deflection_angle(b0: float, rho: float, r_inf: float = 1e4, n: int = 4000) -
     denom = R2 * (R2 / rho ** 2 - 1.0)
     denom = np.where(denom > 0, denom, np.nan)
     integrand = 1.0 / np.sqrt(denom)
-    phi = 2.0 * np.trapz(np.nan_to_num(integrand), r)
+    phi = 2.0 * trapezoid(np.nan_to_num(integrand), r)
     return float(phi - np.pi)
 
 
