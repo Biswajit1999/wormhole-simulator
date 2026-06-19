@@ -1,134 +1,457 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>wormhole-sim — 3D embedding diagram (orbit / zoom)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>wormhole-sim | 3D embedding surface</title>
 <style>
-  html,body{margin:0;height:100%;background:#05070f;color:#cfe3ff;font:14px system-ui,sans-serif;overflow:hidden}
-  #c{display:block;width:100vw;height:100vh;cursor:grab}#c:active{cursor:grabbing}
-  .hud{position:fixed;left:14px;top:12px;background:rgba(8,12,24,.62);border:1px solid #1d2740;
-       border-radius:10px;padding:10px 13px;max-width:320px;backdrop-filter:blur(6px)}
-  .hud h1{font-size:15px;margin:0 0 6px;color:#fff}.hud p{margin:3px 0;color:#9fb3d8}
-  .row{display:flex;align-items:center;gap:8px;margin-top:8px}select,input{accent-color:#6db5ff}
-  .tag{position:fixed;right:12px;bottom:10px;color:#5b6b8c;font-size:12px}
+  :root {
+    --ink: #f8f5ed;
+    --muted: #aeb6c2;
+    --line: rgba(255, 255, 255, 0.16);
+    --panel: rgba(5, 7, 10, 0.62);
+    --amber: #f2bf72;
+    --cyan: #8ce8dd;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #010309;
+    color: var(--ink);
+    font: 14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", sans-serif;
+  }
+
+  #c {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    cursor: grab;
+  }
+
+  #c:active {
+    cursor: grabbing;
+  }
+
+  .hud,
+  .tag {
+    position: fixed;
+    z-index: 2;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    box-shadow: 0 22px 80px rgba(0, 0, 0, 0.36);
+    backdrop-filter: blur(18px);
+  }
+
+  .hud {
+    left: 18px;
+    top: 18px;
+    width: min(350px, calc(100vw - 36px));
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 8px;
+  }
+
+  h1,
+  p {
+    margin: 0;
+  }
+
+  h1 {
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  p,
+  label {
+    color: var(--muted);
+  }
+
+  b {
+    color: var(--ink);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: auto 1fr 44px;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .row-select,
+  .row-check {
+    grid-template-columns: auto 1fr;
+  }
+
+  select {
+    min-height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0 9px;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--cyan);
+  }
+
+  input[type="checkbox"] {
+    accent-color: var(--amber);
+  }
+
+  a {
+    color: var(--cyan);
+    text-decoration: none;
+  }
+
+  .tag {
+    right: 18px;
+    bottom: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  @media (max-width: 700px) {
+    .hud {
+      left: 12px;
+      top: 12px;
+      padding: 12px;
+    }
+
+    .tag {
+      left: 12px;
+      right: auto;
+      bottom: 12px;
+      max-width: calc(100vw - 24px);
+      flex-wrap: wrap;
+      border-radius: 8px;
+    }
+  }
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
-<div class="hud">
-  <h1>Wormhole embedding surface · 3D</h1>
-  <p><b>Drag</b>: rotate (up / down / left / right).</p>
-  <p><b>Scroll</b>: zoom in / out.</p>
-  <div class="row"><span>metric</span>
+<canvas id="c" aria-label="Interactive 3D wormhole embedding surface"></canvas>
+<section class="hud" aria-label="Embedding controls">
+  <h1>Wormhole embedding surface - 3D</h1>
+  <p><b>Drag</b> to rotate. <b>Scroll</b> to zoom through the throat geometry.</p>
+  <label class="row row-select">
+    <span>metric</span>
     <select id="metric">
-      <option value="mt">Morris–Thorne (b=b₀²/r)</option>
-      <option value="ellis">Ellis (catenoid)</option>
+      <option value="ellis">Ellis catenoid</option>
+      <option value="mt">Morris-Thorne (b=b0^2/r)</option>
     </select>
-  </div>
-  <div class="row"><span>throat b₀</span><input id="b0" type="range" min="0.4" max="2.5" step="0.05" value="1.0"><span id="b0v">1.00</span></div>
-  <div class="row"><span>auto-rotate</span><input id="auto" type="checkbox" checked></div>
+  </label>
+  <label class="row">
+    <span>throat b0</span>
+    <input id="b0" type="range" min="0.45" max="2.4" step="0.01" value="1.0" />
+    <span id="b0v">1.00</span>
+  </label>
+  <label class="row row-check">
+    <span>auto-rotate</span>
+    <input id="auto" type="checkbox" checked />
+  </label>
+</section>
+<div class="tag">
+  <a href="index.html">Cinematic view</a>
+  <a href="realtime.html">Ray tracer</a>
 </div>
-<div class="tag">wormhole-sim · web/embedding3d.html</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-const canvas=document.getElementById('c');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-const scene=new THREE.Scene(); scene.background=new THREE.Color(0x05070f);
-const camera=new THREE.PerspectiveCamera(50,2,0.01,500);
+const canvas = document.getElementById("c");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.08;
 
-scene.add(new THREE.AmbientLight(0x4060a0,0.6));
-const key=new THREE.DirectionalLight(0xbfe0ff,1.1); key.position.set(5,8,6); scene.add(key);
-const rim=new THREE.DirectionalLight(0xb98cff,0.6); rim.position.set(-6,-4,-5); scene.add(rim);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x010309);
+scene.fog = new THREE.FogExp2(0x010309, 0.030);
 
-// starfield backdrop
-(function stars(){
-  const g=new THREE.BufferGeometry(), N=1600, p=new Float32Array(N*3);
-  for(let i=0;i<N;i++){const r=120, t=Math.random()*Math.PI*2, u=Math.random()*2-1, s=Math.sqrt(1-u*u);
-    p[3*i]=r*s*Math.cos(t); p[3*i+1]=r*u; p[3*i+2]=r*s*Math.sin(t);}
-  g.setAttribute('position',new THREE.BufferAttribute(p,3));
-  scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x9fb3d8,size:0.5})));
+const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 500);
+const surfaceGroup = new THREE.Group();
+scene.add(surfaceGroup);
+
+scene.add(new THREE.HemisphereLight(0x8ce8dd, 0x090a12, 0.62));
+const key = new THREE.DirectionalLight(0xf8f5ed, 1.28);
+key.position.set(5.0, 7.5, 5.5);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x8ce8dd, 1.05);
+rim.position.set(-6.0, 2.2, -5.0);
+scene.add(rim);
+const warm = new THREE.PointLight(0xf2bf72, 2.4, 18);
+warm.position.set(0, 0.25, 0);
+scene.add(warm);
+
+(function addStars() {
+  const geometry = new THREE.BufferGeometry();
+  const count = 2300;
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const c = new THREE.Color();
+  for (let i = 0; i < count; i++) {
+    const r = 95 + Math.random() * 75;
+    const theta = Math.random() * Math.PI * 2;
+    const u = Math.random() * 2 - 1;
+    const s = Math.sqrt(1 - u * u);
+    positions[i * 3] = r * s * Math.cos(theta);
+    positions[i * 3 + 1] = r * u;
+    positions[i * 3 + 2] = r * s * Math.sin(theta);
+    c.setHSL(0.56 + Math.random() * 0.10, 0.42, 0.70 + Math.random() * 0.22);
+    colors[i * 3] = c.r;
+    colors[i * 3 + 1] = c.g;
+    colors[i * 3 + 2] = c.b;
+  }
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  scene.add(new THREE.Points(geometry, new THREE.PointsMaterial({
+    size: 0.16,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.90,
+    depthWrite: false
+  })));
 })();
 
-let mesh=null;
-function embeddingZ(metric,b0,r){
-  if(metric==='ellis'){ return r; } // parametric height = radial coord; radius=sqrt(r^2+b0^2)
-  // Morris-Thorne b=b0^2/r  ->  dz/dr = 1/sqrt(r^2/b0^2 - 1)
-  return null;
-}
-function buildSurface(metric,b0){
-  if(mesh){scene.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose();}
-  const nR=120, nPhi=160, rMax=5*b0;
-  const verts=[], idx=[];
-  // precompute (radius, height) profile
-  const prof=[];
-  if(metric==='ellis'){
-    for(let i=0;i<nR;i++){const l=-rMax+2*rMax*i/(nR-1); prof.push([Math.sqrt(l*l+b0*b0), l]);}
-  }else{
-    // integrate z(r) on upper sheet then mirror
-    const up=[]; let z=0, prev=null;
-    for(let i=0;i<nR/2;i++){
-      const r=b0*(1+1e-3)+ (rMax-b0)*i/(nR/2-1);
-      const val=r*r/(b0*b0)-1.0; const dz= val>1e-6?1/Math.sqrt(val):0;
-      if(prev){z+=0.5*(dz+prev[1])*(r-prev[0]);} prev=[r,dz]; up.push([r,z]);
-    }
-    // lower sheet (mirror), then upper
-    for(let i=up.length-1;i>=0;i--) prof.push([up[i][0],-up[i][1]]);
-    for(let i=0;i<up.length;i++) prof.push([up[i][0],up[i][1]]);
+const grid = new THREE.GridHelper(15, 40, 0x8ce8dd, 0x2b3a45);
+grid.material.transparent = true;
+grid.material.opacity = 0.14;
+scene.add(grid);
+
+let mesh = null;
+let wire = null;
+let ring = null;
+let profileA = null;
+let profileB = null;
+
+function disposeObject(object) {
+  if (!object) {
+    return;
   }
-  const rows=prof.length;
-  for(let i=0;i<rows;i++){
-    for(let j=0;j<nPhi;j++){
-      const ph=2*Math.PI*j/(nPhi-1), R=prof[i][0], Z=prof[i][1];
-      verts.push(R*Math.cos(ph), Z, R*Math.sin(ph));
-    }
+  surfaceGroup.remove(object);
+  if (object.geometry) {
+    object.geometry.dispose();
   }
-  for(let i=0;i<rows-1;i++){for(let j=0;j<nPhi-1;j++){
-    const a=i*nPhi+j,b=a+1,c=a+nPhi,d=c+1;
-    idx.push(a,c,b, b,c,d);
-  }}
-  const g=new THREE.BufferGeometry();
-  g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
-  g.setIndex(idx); g.computeVertexNormals();
-  const m=new THREE.MeshStandardMaterial({color:0x3aa0ff,metalness:0.35,roughness:0.45,
-        side:THREE.DoubleSide,flatShading:false});
-  mesh=new THREE.Mesh(g,m); scene.add(mesh);
+  if (object.material) {
+    object.material.dispose();
+  }
 }
 
-// --- simple orbit controls (drag rotate, wheel zoom) ---
-let radius=12, theta=1.1, phi=0.6, drag=false, px=0, py=0;
-function place(){
+function makeProfile(metric, b0) {
+  const profile = [];
+  if (metric === "ellis") {
+    const rows = 168;
+    const span = 3.45 * b0;
+    for (let i = 0; i < rows; i++) {
+      const l = -span + (2 * span * i) / (rows - 1);
+      profile.push([Math.sqrt(l * l + b0 * b0), l * 0.84]);
+    }
+    return profile;
+  }
+
+  const half = 84;
+  const rMax = 3.75 * b0;
+  const upper = [];
+  for (let i = 0; i < half; i++) {
+    const t = i / (half - 1);
+    const radius = b0 * (1.0 + 0.001) + (rMax - b0) * t;
+    const z = b0 * Math.acosh(radius / b0);
+    upper.push([radius, z * 0.92]);
+  }
+  for (let i = upper.length - 1; i >= 0; i--) {
+    profile.push([upper[i][0], -upper[i][1]]);
+  }
+  for (let i = 0; i < upper.length; i++) {
+    profile.push([upper[i][0], upper[i][1]]);
+  }
+  return profile;
+}
+
+function makeProfileLine(profile, side, color, opacity) {
+  const points = profile.map(([radius, height]) => new THREE.Vector3(radius * side, height, 0));
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+  const material = new THREE.LineBasicMaterial({
+    color,
+    transparent: true,
+    opacity,
+    depthWrite: false
+  });
+  return new THREE.Line(geometry, material);
+}
+
+function buildSurface(metric, b0) {
+  disposeObject(mesh);
+  disposeObject(wire);
+  disposeObject(ring);
+  disposeObject(profileA);
+  disposeObject(profileB);
+
+  const profile = makeProfile(metric, b0);
+  const nPhi = 208;
+  const verts = [];
+  const colors = [];
+  const idx = [];
+  const colorOuter = new THREE.Color(0x081421);
+  const colorMid = new THREE.Color(0x16699d);
+  const colorThroat = new THREE.Color(0x8ce8dd);
+  const rows = profile.length;
+  const maxRadius = profile.reduce((max, item) => Math.max(max, item[0]), b0);
+
+  for (let i = 0; i < rows; i++) {
+    const radius = profile[i][0];
+    const height = profile[i][1];
+    const throatness = 1 - Math.min(1, (radius - b0) / Math.max(0.0001, maxRadius - b0));
+    const c = new THREE.Color();
+    c.copy(colorOuter).lerp(colorMid, 0.58 + throatness * 0.22).lerp(colorThroat, Math.pow(throatness, 2.0) * 0.78);
+    if (height > 0) {
+      c.lerp(new THREE.Color(0xf2bf72), 0.10 * Math.abs(height) / (4.5 * b0));
+    }
+    for (let j = 0; j < nPhi; j++) {
+      const phi = (Math.PI * 2 * j) / (nPhi - 1);
+      verts.push(radius * Math.cos(phi), height, radius * Math.sin(phi));
+      colors.push(c.r, c.g, c.b);
+    }
+  }
+
+  for (let i = 0; i < rows - 1; i++) {
+    for (let j = 0; j < nPhi - 1; j++) {
+      const a = i * nPhi + j;
+      const b = a + 1;
+      const c = a + nPhi;
+      const d = c + 1;
+      idx.push(a, c, b, b, c, d);
+    }
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
+  geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+  geometry.setIndex(idx);
+  geometry.computeVertexNormals();
+
+  const material = new THREE.MeshPhysicalMaterial({
+    vertexColors: true,
+    metalness: 0.16,
+    roughness: 0.34,
+    clearcoat: 0.55,
+    clearcoatRoughness: 0.38,
+    transparent: true,
+    opacity: 0.84,
+    side: THREE.DoubleSide
+  });
+  mesh = new THREE.Mesh(geometry, material);
+  surfaceGroup.add(mesh);
+
+  wire = new THREE.Mesh(geometry.clone(), new THREE.MeshBasicMaterial({
+    color: 0xcffff8,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.16,
+    depthWrite: false
+  }));
+  surfaceGroup.add(wire);
+
+  ring = new THREE.Mesh(
+    new THREE.TorusGeometry(b0, Math.max(0.018, b0 * 0.018), 18, 220),
+    new THREE.MeshBasicMaterial({ color: 0xf2bf72, transparent: true, opacity: 0.88 })
+  );
+  ring.rotation.x = Math.PI / 2;
+  surfaceGroup.add(ring);
+
+  profileA = makeProfileLine(profile, 1, 0xf2bf72, 0.72);
+  profileB = makeProfileLine(profile, -1, 0x8ce8dd, 0.54);
+  surfaceGroup.add(profileA);
+  surfaceGroup.add(profileB);
+}
+
+let radius = 8.4;
+let theta = 1.32;
+let phi = -0.62;
+let drag = false;
+let px = 0;
+let py = 0;
+
+function placeCamera() {
   camera.position.set(
-    radius*Math.sin(theta)*Math.cos(phi),
-    radius*Math.cos(theta),
-    radius*Math.sin(theta)*Math.sin(phi));
-  camera.lookAt(0,0,0);
+    radius * Math.sin(theta) * Math.cos(phi),
+    radius * Math.cos(theta),
+    radius * Math.sin(theta) * Math.sin(phi)
+  );
+  camera.lookAt(0, 0, 0);
 }
-canvas.addEventListener('mousedown',e=>{drag=true;px=e.clientX;py=e.clientY;});
-addEventListener('mouseup',()=>drag=false);
-addEventListener('mousemove',e=>{ if(!drag)return;
-  phi   -= (e.clientX-px)*0.01;
-  theta -= (e.clientY-py)*0.01;
-  theta = Math.max(0.15, Math.min(Math.PI-0.15, theta));
-  px=e.clientX; py=e.clientY;
+
+canvas.addEventListener("mousedown", (event) => {
+  drag = true;
+  px = event.clientX;
+  py = event.clientY;
 });
-canvas.addEventListener('wheel',e=>{e.preventDefault();
-  radius=Math.max(2.5,Math.min(60,radius+e.deltaY*0.02));},{passive:false});
+window.addEventListener("mouseup", () => {
+  drag = false;
+});
+window.addEventListener("mousemove", (event) => {
+  if (!drag) {
+    return;
+  }
+  phi -= (event.clientX - px) * 0.008;
+  theta -= (event.clientY - py) * 0.008;
+  theta = Math.max(0.18, Math.min(Math.PI - 0.18, theta));
+  px = event.clientX;
+  py = event.clientY;
+});
+canvas.addEventListener("wheel", (event) => {
+  event.preventDefault();
+  radius = Math.max(3.4, Math.min(36, radius + event.deltaY * 0.018));
+}, { passive: false });
 
-const metricSel=document.getElementById('metric'), b0s=document.getElementById('b0'),
-      b0v=document.getElementById('b0v'), auto=document.getElementById('auto');
-function rebuild(){buildSurface(metricSel.value, parseFloat(b0s.value)); b0v.textContent=(+b0s.value).toFixed(2);}
-metricSel.onchange=rebuild; b0s.oninput=rebuild; rebuild();
+const metricSel = document.getElementById("metric");
+const b0s = document.getElementById("b0");
+const b0v = document.getElementById("b0v");
+const auto = document.getElementById("auto");
 
-function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);
-  camera.aspect=w/h;camera.updateProjectionMatrix();}
-addEventListener('resize',resize); resize();
+function rebuild() {
+  const b0 = Number(b0s.value);
+  buildSurface(metricSel.value, b0);
+  b0v.textContent = b0.toFixed(2);
+}
+metricSel.addEventListener("change", rebuild);
+b0s.addEventListener("input", rebuild);
+rebuild();
 
-function loop(){
-  if(auto.checked && !drag) phi+=0.0035;
-  place(); renderer.render(scene,camera); requestAnimationFrame(loop);
+function resize() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener("resize", resize);
+resize();
+
+function loop() {
+  if (auto.checked && !drag) {
+    phi += 0.0026;
+  }
+  warm.intensity = 2.0 + 0.45 * Math.sin(performance.now() * 0.0012);
+  surfaceGroup.rotation.y += 0.00025;
+  placeCamera();
+  renderer.render(scene, camera);
+  requestAnimationFrame(loop);
 }
 loop();
 </script>
