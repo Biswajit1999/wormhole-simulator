@@ -1,7 +1,7 @@
 """End-to-end demonstration script.
 
-Runs the three milestone demos from docs/deliverables.md and saves figures to
-../figures/.  Execute from the repository root:
+Runs the milestone demos and saves figures to ../figures/.  Execute from the
+repository root:
 
     python examples/run_demos.py
 
@@ -37,7 +37,7 @@ os.makedirs(FIGDIR, exist_ok=True)
 
 def demo_embedding():
     wh = MorrisThorne(b0=1.0)
-    ax = plot_embedding_surface(wh, r0=wh.b0, r_max=5.0)
+    plot_embedding_surface(wh, r0=wh.b0, r_max=5.0)
     plt.savefig(os.path.join(FIGDIR, "embedding_morris_thorne.png"), dpi=130)
     plt.close("all")
     print("[1] embedding diagram saved")
@@ -57,7 +57,9 @@ def demo_nec():
     plt.plot(rs, rho_pr, "b-")
     plt.fill_between(rs, rho_pr, 0, where=np.array(rho_pr) < 0, color="red", alpha=0.2,
                      label="NEC violated")
-    plt.xlabel("r"); plt.ylabel(r"$\rho + p_r$"); plt.legend()
+    plt.xlabel("r")
+    plt.ylabel(r"$\rho + p_r$")
+    plt.legend()
     plt.title("Null energy condition across the throat")
     plt.tight_layout()
     plt.savefig(os.path.join(FIGDIR, "nec_profile.png"), dpi=130)
@@ -69,7 +71,8 @@ def demo_lensing():
     rhos, angles = demo_einstein_ring()
     plt.figure(figsize=(6, 4))
     plt.plot(rhos, np.degrees(angles), "g-")
-    plt.xlabel("impact parameter $\\rho$"); plt.ylabel("deflection angle (deg)")
+    plt.xlabel("impact parameter $\\rho$")
+    plt.ylabel("deflection angle (deg)")
     plt.title("Ellis wormhole light deflection")
     plt.tight_layout()
     plt.savefig(os.path.join(FIGDIR, "ellis_deflection.png"), dpi=130)
@@ -85,7 +88,8 @@ def demo_wave():
     plt.figure(figsize=(7, 4))
     for t, s in zip(times[::3], snaps[::3]):
         plt.plot(sim.l, s + 0.0 * t, lw=0.8)
-    plt.xlabel("proper radius $l$"); plt.ylabel(r"$\phi$")
+    plt.xlabel("proper radius $l$")
+    plt.ylabel(r"$\phi$")
     plt.title("Scalar wave scattering on the wormhole barrier")
     plt.tight_layout()
     plt.savefig(os.path.join(FIGDIR, "wave_scattering.png"), dpi=130)

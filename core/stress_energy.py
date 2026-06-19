@@ -112,7 +112,6 @@ def null_energy_condition(metric: Metric, x: np.ndarray, n_dirs: int = 64) -> fl
     traversable wormhole throat).
     """
     T = stress_energy(metric, x)
-    g = metric.components(x)
     e_t, e_r, e_th, e_ph = _orthonormal_frame(metric, x)
     spatial = [e_r, e_th, e_ph]
 

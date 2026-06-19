@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from core.metrics import EllisBronnikov
 from visualization.raytrace import deflection_angle
 
 
@@ -58,8 +57,6 @@ def render_lensed_image(b0=1.0, cam_distance=10.0, fov_deg=60.0, res=480):
     fov_deg : full field of view of the (square) camera.
     res : output resolution in pixels.
     """
-    wh = EllisBronnikov(b0=b0)
-
     # Tabulate deflection vs. impact parameter once (same-universe rays, b > b0)
     b_tab = np.linspace(b0 * 1.0001, cam_distance * np.tan(np.radians(fov_deg)) + 5 * b0, 600)
     alpha_tab = np.array([deflection_angle(b0, b) for b in b_tab])
@@ -88,9 +85,6 @@ def render_lensed_image(b0=1.0, cam_distance=10.0, fov_deg=60.0, res=480):
     # Build sky coordinates from the outgoing direction
     sky_theta = out_ang
     sky_phi = azimuth
-    du = sky_theta * np.cos(azimuth)
-    dv = sky_theta * np.sin(azimuth)
-
     img = np.zeros((res, res, 3))
     # Same-universe pixels
     img[same] = _grid_sky(sky_theta[same], sky_phi[same], universe=+1)

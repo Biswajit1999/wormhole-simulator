@@ -12,7 +12,6 @@ from core.semiclassical import (
 )
 from core.modified_gravity import ModifiedGravityWormhole
 from numerics.geodesic import GeodesicSolver, null_initial_velocity
-from numerics.orbits import radial_velocity_sq
 from numerics.qnm import RingdownExtractor, regge_wheeler_potential
 
 

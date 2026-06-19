@@ -6,7 +6,6 @@ against the closed-form Morris-Thorne stress-energy components.
 """
 
 import numpy as np
-import pytest
 
 from core.metrics import MorrisThorne, EllisBronnikov
 from core import stress_energy as se

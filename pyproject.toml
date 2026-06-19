@@ -30,3 +30,12 @@ filterwarnings = ["ignore::DeprecationWarning"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+
+[tool.ruff.lint]
+# Ignore stylistic rules that conflict with physics conventions:
+# E741 ambiguous name (l = proper length), E731 lambda (metric functions),
+# E702 multiple statements (compact plotting), E501 line length, E402 import order.
+ignore = ["E741", "E731", "E702", "E501", "E402"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
