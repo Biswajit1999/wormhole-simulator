@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>wormhole-sim — 3D embedding diagram (orbit / zoom)</title>
+<style>
+  html,body{margin:0;height:100%;background:#05070f;color:#cfe3ff;font:14px system-ui,sans-serif;overflow:hidden}
+  #c{display:block;width:100vw;height:100vh;cursor:grab}#c:active{cursor:grabbing}
+  .hud{position:fixed;left:14px;top:12px;background:rgba(8,12,24,.62);border:1px solid #1d2740;
+       border-radius:10px;padding:10px 13px;max-width:320px;backdrop-filter:blur(6px)}
+  .hud h1{font-size:15px;margin:0 0 6px;color:#fff}.hud p{margin:3px 0;color:#9fb3d8}
+  .row{display:flex;align-items:center;gap:8px;margin-top:8px}select,input{accent-color:#6db5ff}
+  .tag{position:fixed;right:12px;bottom:10px;color:#5b6b8c;font-size:12px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud">
+  <h1>Wormhole embedding surface · 3D</h1>
+  <p><b>Drag</b>: rotate (up / down / left / right).</p>
+  <p><b>Scroll</b>: zoom in / out.</p>
+  <div class="row"><span>metric</span>
+    <select id="metric">
+      <option value="mt">Morris–Thorne (b=b₀²/r)</option>
+      <option value="ellis">Ellis (catenoid)</option>
+    </select>
+  </div>
+  <div class="row"><span>throat b₀</span><input id="b0" type="range" min="0.4" max="2.5" step="0.05" value="1.0"><span id="b0v">1.00</span></div>
+  <div class="row"><span>auto-rotate</span><input id="auto" type="checkbox" checked></div>
+</div>
+<div class="tag">wormhole-sim · web/embedding3d.html</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x05070f);
+const camera=new THREE.PerspectiveCamera(50,2,0.01,500);
+
+scene.add(new THREE.AmbientLight(0x4060a0,0.6));
+const key=new THREE.DirectionalLight(0xbfe0ff,1.1); key.position.set(5,8,6); scene.add(key);
+const rim=new THREE.DirectionalLight(0xb98cff,0.6); rim.position.set(-6,-4,-5); scene.add(rim);
+
+// starfield backdrop
+(function stars(){
+  const g=new THREE.BufferGeometry(), N=1600, p=new Float32Array(N*3);
+  for(let i=0;i<N;i++){const r=120, t=Math.random()*Math.PI*2, u=Math.random()*2-1, s=Math.sqrt(1-u*u);
+    p[3*i]=r*s*Math.cos(t); p[3*i+1]=r*u; p[3*i+2]=r*s*Math.sin(t);}
+  g.setAttribute('position',new THREE.BufferAttribute(p,3));
+  scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x9fb3d8,size:0.5})));
+})();
+
+let mesh=null;
+function embeddingZ(metric,b0,r){
+  if(metric==='ellis'){ return r; } // parametric height = radial coord; radius=sqrt(r^2+b0^2)
+  // Morris-Thorne b=b0^2/r  ->  dz/dr = 1/sqrt(r^2/b0^2 - 1)
+  return null;
+}
+function buildSurface(metric,b0){
+  if(mesh){scene.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose();}
+  const nR=120, nPhi=160, rMax=5*b0;
+  const verts=[], idx=[];
+  // precompute (radius, height) profile
+  const prof=[];
+  if(metric==='ellis'){
+    for(let i=0;i<nR;i++){const l=-rMax+2*rMax*i/(nR-1); prof.push([Math.sqrt(l*l+b0*b0), l]);}
+  }else{
+    // integrate z(r) on upper sheet then mirror
+    const up=[]; let z=0, prev=null;
+    for(let i=0;i<nR/2;i++){
+      const r=b0*(1+1e-3)+ (rMax-b0)*i/(nR/2-1);
+      const val=r*r/(b0*b0)-1.0; const dz= val>1e-6?1/Math.sqrt(val):0;
+      if(prev){z+=0.5*(dz+prev[1])*(r-prev[0]);} prev=[r,dz]; up.push([r,z]);
+    }
+    // lower sheet (mirror), then upper
+    for(let i=up.length-1;i>=0;i--) prof.push([up[i][0],-up[i][1]]);
+    for(let i=0;i<up.length;i++) prof.push([up[i][0],up[i][1]]);
+  }
+  const rows=prof.length;
+  for(let i=0;i<rows;i++){
+    for(let j=0;j<nPhi;j++){
+      const ph=2*Math.PI*j/(nPhi-1), R=prof[i][0], Z=prof[i][1];
+      verts.push(R*Math.cos(ph), Z, R*Math.sin(ph));
+    }
+  }
+  for(let i=0;i<rows-1;i++){for(let j=0;j<nPhi-1;j++){
+    const a=i*nPhi+j,b=a+1,c=a+nPhi,d=c+1;
+    idx.push(a,c,b, b,c,d);
+  }}
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+  g.setIndex(idx); g.computeVertexNormals();
+  const m=new THREE.MeshStandardMaterial({color:0x3aa0ff,metalness:0.35,roughness:0.45,
+        side:THREE.DoubleSide,flatShading:false});
+  mesh=new THREE.Mesh(g,m); scene.add(mesh);
+}
+
+// --- simple orbit controls (drag rotate, wheel zoom) ---
+let radius=12, theta=1.1, phi=0.6, drag=false, px=0, py=0;
+function place(){
+  camera.position.set(
+    radius*Math.sin(theta)*Math.cos(phi),
+    radius*Math.cos(theta),
+    radius*Math.sin(theta)*Math.sin(phi));
+  camera.lookAt(0,0,0);
+}
+canvas.addEventListener('mousedown',e=>{drag=true;px=e.clientX;py=e.clientY;});
+addEventListener('mouseup',()=>drag=false);
+addEventListener('mousemove',e=>{ if(!drag)return;
+  phi   -= (e.clientX-px)*0.01;
+  theta -= (e.clientY-py)*0.01;
+  theta = Math.max(0.15, Math.min(Math.PI-0.15, theta));
+  px=e.clientX; py=e.clientY;
+});
+canvas.addEventListener('wheel',e=>{e.preventDefault();
+  radius=Math.max(2.5,Math.min(60,radius+e.deltaY*0.02));},{passive:false});
+
+const metricSel=document.getElementById('metric'), b0s=document.getElementById('b0'),
+      b0v=document.getElementById('b0v'), auto=document.getElementById('auto');
+function rebuild(){buildSurface(metricSel.value, parseFloat(b0s.value)); b0v.textContent=(+b0s.value).toFixed(2);}
+metricSel.onchange=rebuild; b0s.oninput=rebuild; rebuild();
+
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);
+  camera.aspect=w/h;camera.updateProjectionMatrix();}
+addEventListener('resize',resize); resize();
+
+function loop(){
+  if(auto.checked && !drag) phi+=0.0035;
+  place(); renderer.render(scene,camera); requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

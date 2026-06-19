@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wormhole-sim"
+version = "0.2.0"
+description = "Relativistic wormhole simulation framework (metrics, geodesics, lensing, stability, QNM, 3D)"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Biswajit Jana" }]
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "scipy>=1.10", "matplotlib>=3.7"]
+
+[project.optional-dependencies]
+accel = ["jax[cpu]>=0.4.20"]
+viz = ["plotly>=5.18"]
+app = ["streamlit>=1.30"]
+io = ["h5py>=3.9"]
+dev = ["pytest>=7.4", "pytest-cov", "ruff", "black"]
+
+[tool.setuptools]
+packages = ["core", "numerics", "visualization"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

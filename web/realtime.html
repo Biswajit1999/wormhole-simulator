@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>wormhole-sim — real-time Ellis wormhole (GLSL ray tracer)</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;color:#cfe3ff;font:14px system-ui,sans-serif;overflow:hidden}
+  #c{display:block;width:100vw;height:100vh;cursor:grab}
+  #c:active{cursor:grabbing}
+  .hud{position:fixed;left:14px;top:12px;background:rgba(8,12,24,.62);border:1px solid #1d2740;
+       border-radius:10px;padding:10px 13px;max-width:330px;backdrop-filter:blur(6px)}
+  .hud h1{font-size:15px;margin:0 0 6px;color:#fff}
+  .hud p{margin:4px 0;color:#9fb3d8}
+  .hud b{color:#bfe0ff}
+  .row{display:flex;align-items:center;gap:8px;margin-top:6px}
+  input[type=range]{width:150px}
+  .tag{position:fixed;right:12px;bottom:10px;color:#5b6b8c;font-size:12px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud">
+  <h1>Ellis wormhole · real-time geodesic ray tracer</h1>
+  <p><b>Drag</b> to look around (up/down/left/right).</p>
+  <p><b>Scroll</b> to fly in / out through the throat.</p>
+  <p>Each pixel back-integrates a null geodesic of the Ellis metric in its own plane.</p>
+  <div class="row"><span>throat&nbsp;b₀</span><input id="b0" type="range" min="0.4" max="3" step="0.05" value="1.0"><span id="b0v">1.00</span></div>
+  <div class="row"><span>auto-fly</span><input id="auto" type="checkbox" checked></div>
+</div>
+<div class="tag">wormhole-sim · web/realtime.html</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+const scene = new THREE.Scene();
+const cam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+
+const uniforms = {
+  iTime:{value:0}, iRes:{value:new THREE.Vector2()},
+  yaw:{value:0.0}, pitch:{value:0.0}, dist:{value:8.0}, b0:{value:1.0}
+};
+
+const frag = `
+precision highp float;
+uniform float iTime; uniform vec2 iRes;
+uniform float yaw, pitch, dist, b0;
+
+// hash-based procedural starfield sampled by a 3D direction
+float hash(vec3 p){ p=fract(p*0.3183099+vec3(0.1,0.2,0.3)); p*=17.0;
+  return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+vec3 sky(vec3 d, float side){
+  // grid of stars on a quantized direction
+  vec3 q = floor(d*40.0);
+  float s = step(0.985, hash(q));
+  vec3 star = vec3(s);
+  // faint coordinate grid to reveal lensing
+  float g = smoothstep(0.02,0.0,abs(fract(d.y*8.0)-0.5)-0.48)
+          + smoothstep(0.02,0.0,abs(fract(atan(d.z,d.x)*4.0/3.14159)-0.5)-0.48);
+  vec3 tint = side>0.0 ? vec3(0.10,0.30,0.75) : vec3(0.75,0.30,0.10);
+  return star*1.2 + g*0.25*tint + 0.02*tint;
+}
+
+void main(){
+  vec2 uv = (gl_FragCoord.xy - 0.5*iRes)/iRes.y;
+
+  // camera direction from yaw/pitch (mouse)
+  float cy=cos(yaw), sy=sin(yaw), cp=cos(pitch), sp=sin(pitch);
+  vec3 fwd = vec3(cp*sy, sp, -cp*cy);
+  vec3 right = normalize(cross(fwd, vec3(0,1,0)));
+  vec3 up = cross(right, fwd);
+  vec3 rd = normalize(fwd + uv.x*0.9*right + uv.y*0.9*up);
+
+  // observer position: radial distance "dist" on the +z axis of wormhole space,
+  // expressed through the proper-radial coordinate l (Ellis: r=sqrt(l^2+b0^2)).
+  float l = dist;                 // start in the near universe (l>0)
+  // reduce to the 2D plane spanned by radial dir e_r and ray rd
+  vec3 er = vec3(0.0,0.0,1.0);    // radial (camera looks toward -z = throat)
+  float cosA = clamp(dot(rd, -er), -1.0, 1.0);
+  // transverse basis in the ray plane
+  vec3 et = normalize(rd + er*cosA); // component of rd perpendicular to er
+  float phi = 0.0;
+  // conserved impact parameter h = r * sin(angle to radial)
+  float r = sqrt(l*l + b0*b0);
+  float sinA = sqrt(max(0.0,1.0-cosA*cosA));
+  float h = r * sinA;
+  float pl = -cosA;               // initial dl/dλ (inward)
+
+  // integrate the Ellis null geodesic: l, phi, pl
+  float dlam = 0.25; 
+  for(int i=0;i<200;i++){
+    r = sqrt(l*l + b0*b0);
+    float dphi = h/(r*r);
+    // dpl/dλ = h^2 * l / r^4   (from the radial geodesic equation)
+    float dpl = h*h*l/(r*r*r*r);
+    l   += pl*dlam;
+    phi += dphi*dlam;
+    pl  += dpl*dlam;
+    if(abs(l)>60.0) break;
+  }
+  float side = l>0.0 ? 1.0 : -1.0;
+
+  // reconstruct outgoing 3D direction in the ray plane
+  vec3 outdir = normalize(cos(phi)*(-er) + sin(phi)*et);
+  // rotate by camera yaw so panning moves the background
+  vec3 col = sky(outdir, side);
+
+  // gentle vignette + tone
+  col *= 1.0 - 0.25*length(uv);
+  gl_FragColor = vec4(pow(col, vec3(0.85)), 1.0);
+}
+`;
+
+const mat = new THREE.ShaderMaterial({uniforms, fragmentShader:frag,
+  vertexShader:`void main(){ gl_Position=vec4(position,1.0); }`});
+scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), mat));
+
+// --- interaction: drag to look, wheel to zoom (fly through) ---
+let drag=false, px=0, py=0;
+canvas.addEventListener('mousedown',e=>{drag=true;px=e.clientX;py=e.clientY;});
+addEventListener('mouseup',()=>drag=false);
+addEventListener('mousemove',e=>{
+  if(!drag) return;
+  uniforms.yaw.value   += (e.clientX-px)*0.005;
+  uniforms.pitch.value += (e.clientY-py)*0.005;
+  uniforms.pitch.value = Math.max(-1.4, Math.min(1.4, uniforms.pitch.value));
+  px=e.clientX; py=e.clientY;
+});
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  uniforms.dist.value = Math.max(-12, Math.min(20, uniforms.dist.value + e.deltaY*0.01));
+}, {passive:false});
+
+const b0s=document.getElementById('b0'), b0v=document.getElementById('b0v');
+b0s.addEventListener('input',()=>{uniforms.b0.value=parseFloat(b0s.value);b0v.textContent=(+b0s.value).toFixed(2);});
+const auto=document.getElementById('auto');
+
+function resize(){
+  const w=innerWidth, h=innerHeight;
+  renderer.setSize(w,h,false);
+  uniforms.iRes.value.set(w*renderer.getPixelRatio(), h*renderer.getPixelRatio());
+}
+addEventListener('resize',resize); resize();
+
+let t0=performance.now();
+function loop(t){
+  uniforms.iTime.value=(t-t0)/1000;
+  if(auto.checked){ // slow automatic fly-through animation
+    uniforms.dist.value -= 0.015;
+    if(uniforms.dist.value < -10) uniforms.dist.value = 18;
+  }
+  renderer.render(scene,cam);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

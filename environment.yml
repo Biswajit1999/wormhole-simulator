@@ -1,0 +1,15 @@
+name: wormhole-sim
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy>=1.24
+  - scipy>=1.10
+  - matplotlib>=3.7
+  - h5py>=3.9
+  - pytest>=7.4
+  - pip
+  - pip:
+      - jax[cpu]>=0.4.20
+      - plotly>=5.18
+      - streamlit>=1.30

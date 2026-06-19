@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "If you use wormhole-sim, please cite it together with the primary physics references."
+title: "wormhole-sim: a relativistic wormhole simulation framework"
+version: 0.2.0
+date-released: 2026-06-19
+authors:
+  - family-names: Jana
+    given-names: Biswajit
+license: MIT
+keywords:
+  - general relativity
+  - wormholes
+  - geodesics
+  - gravitational lensing
+  - numerical relativity
+references:
+  - type: article
+    authors: [{family-names: Morris, given-names: Michael}, {family-names: Thorne, given-names: Kip}]
+    title: "Wormholes in spacetime and their use for interstellar travel"
+    journal: "American Journal of Physics"
+    volume: 56
+    year: 1988
+  - type: article
+    authors: [{family-names: Teo, given-names: Edward}]
+    title: "Rotating traversable wormholes"
+    journal: "Physical Review D"
+    volume: 58
+    year: 1998
+  - type: article
+    authors: [{family-names: Ford, given-names: Larry}, {family-names: Roman, given-names: Thomas}]
+    title: "Averaged energy conditions and quantum inequalities"
+    journal: "Physical Review D"
+    volume: 51
+    year: 1995

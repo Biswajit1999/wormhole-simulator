@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>wormhole-sim — relativistic wormhole simulation framework</title>
+<style>
+  :root{
+    --bg:#070912; --panel:#0e1322; --ink:#e8ecf6; --muted:#9aa6c2;
+    --accent:#6db5ff; --accent2:#b98cff; --line:#1d2740; --code:#0a0f1c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink)}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:920px;margin:0 auto;padding:0 22px}
+  header{padding:84px 0 56px;text-align:center;
+    background:radial-gradient(1200px 480px at 50% -120px,rgba(109,181,255,.18),transparent 60%),
+               radial-gradient(900px 420px at 50% 0,rgba(185,140,255,.12),transparent 55%);
+    border-bottom:1px solid var(--line)}
+  h1{font-size:2.7rem;margin:.1em 0;letter-spacing:-.5px}
+  .tag{color:var(--muted);font-size:1.12rem;max-width:640px;margin:14px auto 0}
+  .pills{margin-top:26px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .pill{border:1px solid var(--line);border-radius:999px;padding:7px 15px;color:var(--muted);font-size:.85rem;background:var(--panel)}
+  section{padding:48px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:1.6rem;margin:0 0 .5em;color:#fff}
+  h3{color:var(--accent2);margin:1.6em 0 .4em;font-size:1.05rem;letter-spacing:.3px;text-transform:uppercase}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-top:18px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .card h4{margin:0 0 6px;color:#fff}
+  .card p{margin:0;color:var(--muted);font-size:.92rem}
+  code,pre{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:12px;padding:16px;overflow:auto;font-size:.86rem}
+  table{width:100%;border-collapse:collapse;margin-top:16px;font-size:.92rem}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left}
+  th{background:var(--panel);color:#fff}
+  .eq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 16px;margin:14px 0;overflow-x:auto}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--line);border-radius:12px;background:#fff}
+  figcaption{color:var(--muted);font-size:.85rem;margin-top:8px}
+  .mermaid{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:16px}
+  footer{padding:40px 0 70px;color:var(--muted);font-size:.88rem;text-align:center}
+  .btn{display:inline-block;margin:6px;padding:11px 20px;border-radius:10px;border:1px solid var(--line);
+       background:linear-gradient(180deg,#15203a,#0e1626);color:#fff}
+  .note{color:var(--muted);font-size:.86rem;border-left:3px solid var(--accent);padding-left:12px;margin-top:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>wormhole&#8209;sim</h1>
+    <p class="tag">A unified, tested, reproducible Python framework for relativistic
+       wormhole spacetimes — geometry, geodesics, energy conditions, and lensing.</p>
+    <div class="pills">
+      <span class="pill">Morris–Thorne · Ellis · Charged · Rotating</span>
+      <span class="pill">MIT licensed</span>
+      <span class="pill">Python · NumPy/SciPy</span>
+      <span class="pill">32 tests · CI · Docker</span>
+    </div>
+    <div style="margin-top:26px">
+      <a class="btn" href="../README.md">README</a>
+      <a class="btn" href="../docs/mathematical_foundations.md">Theory</a>
+      <a class="btn" href="../docs/architecture.md">Architecture</a>
+      <a class="btn" href="embedding3d.html">3D embedding (orbit)</a>
+      <a class="btn" href="realtime.html">Real-time lensing</a>
+    </div>
+  </div>
+</header>
+
+<section><div class="wrap">
+  <h2>Overview</h2>
+  <p>A <strong>wormhole</strong> connects two regions of spacetime through a
+     <em>throat</em>. The non-traversable Einstein–Rosen bridge (1935) pinches off
+     behind a horizon; the traversable wormholes of Ellis–Bronnikov (1973) and
+     <strong>Morris &amp; Thorne (1988)</strong> stay open — but only if matter
+     <strong>violates the null energy condition</strong> at the throat. Quantum field
+     theory permits localized negative energy, yet the <strong>Ford–Roman quantum
+     inequalities (1995)</strong> bound how much. This framework implements the
+     classical, geometric side of that story: specify a metric, and obtain its
+     curvature, exotic-matter content, geodesics, and lensing signature.</p>
+  <div class="note">This is a research scaffold, not a new rendering technique.
+     See <a href="../docs/related_work.md">Related Work</a> for an honest survey of
+     existing wormhole and lensing codes and how this differs.</div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>The metric families</h2>
+  <div class="grid">
+    <div class="card"><h4>Morris–Thorne</h4><p>Static spherical throat with free
+       shape <code>b(r)</code> and redshift <code>Φ(r)</code>; the canonical
+       exotic-matter wormhole.</p></div>
+    <div class="card"><h4>Ellis–Bronnikov</h4><p>Massless "drainhole" sourced by a
+       phantom scalar; geodesically complete, curvature bounded; exact lensing.</p></div>
+    <div class="card"><h4>Charged</h4><p>Reissner–Nordström-like throat from the
+       Einstein–Maxwell system; charge <code>Q</code> stiffens the throat.</p></div>
+    <div class="card"><h4>Teo rotating</h4><p>Stationary axisymmetric wormhole with
+       frame dragging <code>ω(r)</code> through the off-diagonal metric term.</p></div>
+  </div>
+
+  <h3>Static line element &amp; flare-out</h3>
+  <div class="eq">$$ds^2 = -e^{2\Phi(r)}dt^2 + \frac{dr^2}{1-b(r)/r} + r^2(d\theta^2+\sin^2\theta\,d\phi^2)$$</div>
+  <p>The throat at <code>b(r₀)=r₀</code> with flare-out <code>b'(r₀)&lt;1</code> forces,
+     via the field equations,</p>
+  <div class="eq">$$\rho + p_r = \frac{1}{8\pi}\frac{b'r-b}{r^3} < 0 \quad\Rightarrow\quad \text{NEC violation.}$$</div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>From metric to geodesic in five lines</h2>
+<pre><code>from core.metrics import EllisBronnikov
+from numerics.geodesic import GeodesicSolver, null_initial_velocity
+import numpy as np
+
+wh = EllisBronnikov(b0=1.0)
+x0 = np.array([0.0, 6.0, np.pi/2, 0.0])               # (t, r, theta, phi)
+u0 = null_initial_velocity(wh, x0, [-1.0, 0.0, 0.05]) # an off-axis photon
+res = GeodesicSolver(wh).integrate(x0, u0, affine_span=(0, 20))
+print(res.coords[:,1].min() < 0)          # True: the ray crossed the throat
+</code></pre>
+  <p class="note">Curvature is computed numerically from <code>components(x)</code>, so
+     a new metric only needs that one method — geodesics, energy conditions and
+     embeddings then work automatically.</p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>What you can render</h2>
+  <figure>
+    <img src="../figures/embedding_morris_thorne.png" alt="Morris-Thorne embedding diagram" />
+    <figcaption>Embedding diagram of a Morris–Thorne wormhole — the two sheets flare
+      out of the throat (generated by <code>examples/run_demos.py</code>).</figcaption>
+  </figure>
+  <figure>
+    <img src="../figures/ellis_deflection.png" alt="Ellis wormhole light deflection" />
+    <figcaption>Exact light-deflection curve for the Ellis wormhole vs. impact
+      parameter — the basis for gravitational-lensing ray tracing.</figcaption>
+  </figure>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Numerical methods at a glance</h2>
+  <table>
+    <tr><th>Method</th><th>Advantage</th><th>Drawback</th><th>Used for</th></tr>
+    <tr><td>Geodesic ODE (RK45/RK4)</td><td>Lightweight, norm-conserving</td><td>Stiff near singularities</td><td>Rays, particles, lensing</td></tr>
+    <tr><td>Finite difference</td><td>Simple local stencils</td><td>Low order</td><td>Scalar-wave evolution</td></tr>
+    <tr><td>Chebyshev spectral</td><td>Exponential convergence</td><td>Global coupling</td><td>Static field BVPs</td></tr>
+    <tr><td>AMR (external)</td><td>Resolves throat gradients</td><td>Overhead</td><td>Einstein Toolkit evolution</td></tr>
+  </table>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Module architecture</h2>
+  <div class="mermaid">
+flowchart LR
+  subgraph core[core/ physics]
+    M[metrics: MT · Ellis · Charged · Teo] --> S[stress_energy: Einstein · NEC/WEC]
+  end
+  subgraph numerics[numerics/ solvers]
+    G[GeodesicSolver]
+    P[FiniteDifferenceWave]
+  end
+  subgraph viz[visualization/]
+    E[embed]
+    R[raytrace]
+    PE[penrose]
+  end
+  M --> G --> R
+  M --> E
+  S --> viz
+  viz --> W[web · docs]
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  wormhole-sim · MIT · built for GR / numerical-relativity research ·
+  primary references: Morris &amp; Thorne 1988 · Ellis 1973 · Teo 1998 · Ford &amp; Roman 1995
+</div></footer>
+
+<script>
+  window.MathJax = { tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] } };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+</script>
+</body>
+</html>

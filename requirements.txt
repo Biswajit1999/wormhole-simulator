@@ -1,0 +1,9 @@
+numpy>=1.24
+scipy>=1.10
+matplotlib>=3.7
+# Optional extras (uncomment as needed)
+# jax[cpu]>=0.4.20
+# plotly>=5.18
+# streamlit>=1.30
+# h5py>=3.9
+pytest>=7.4
