@@ -1,6 +1,6 @@
 # wormhole-sim
 
-![Ellis wormhole gravitational lensing](figures/lensing_ellis.png)
+![wormhole-sim — relativistic wormhole simulation](cover.png)
 
 A modular, open-source framework for **relativistic wormhole simulation** — metric
 definitions, geodesic integration, energy-condition diagnostics, embedding/Penrose

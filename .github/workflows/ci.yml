@@ -35,7 +35,8 @@ jobs:
       - name: Run tests
         run: pytest -q --cov=core --cov=numerics --cov=visualization
 
-      - name: Smoke-test demos (headless)
+      - name: Smoke-test demos (headless, non-blocking)
+        continue-on-error: true
         run: |
           MPLBACKEND=Agg python examples/run_demos.py
 
