@@ -3,7 +3,7 @@
 **Author:** Biswajit Jana  
 **Version:** 0.2.0 research preview  
 **License:** MIT  
-**Live demo:** [https://biswajit1999.github.io/wormhole-simulator/](https://biswajit1999.github.io/wormhole-simulator/)  
+**Live demo:** [https://biswajit1999.github.io/wormhole-simulator/]([https://biswajit1999.github.io/wormhole-simulator/](https://biswajit1999.github.io/wormhole-simulator/web/index.html))  
 **Repository:** [https://github.com/Biswajit1999/wormhole-simulator](https://github.com/Biswajit1999/wormhole-simulator)
 
 ![wormhole-sim relativistic wormhole simulation](figures/cover.png)
