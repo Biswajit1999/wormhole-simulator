@@ -1,4 +1,4 @@
-# wormhole-sim
+# Welcome to Wormhole Simulator
 
 ![wormhole-sim — relativistic wormhole simulation](figures/cover.png)
 
