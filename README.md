@@ -1,6 +1,6 @@
 # wormhole-sim
 
-![wormhole-sim — relativistic wormhole simulation](cover.png)
+![wormhole-sim — relativistic wormhole simulation](figures/cover.png)
 
 A modular, open-source framework for **relativistic wormhole simulation** — metric
 definitions, geodesic integration, energy-condition diagnostics, embedding/Penrose
