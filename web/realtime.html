@@ -1,157 +1,381 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>wormhole-sim — real-time Ellis wormhole (GLSL ray tracer)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>wormhole-sim | real-time Ellis geodesic ray tracer</title>
 <style>
-  html,body{margin:0;height:100%;background:#000;color:#cfe3ff;font:14px system-ui,sans-serif;overflow:hidden}
-  #c{display:block;width:100vw;height:100vh;cursor:grab}
-  #c:active{cursor:grabbing}
-  .hud{position:fixed;left:14px;top:12px;background:rgba(8,12,24,.62);border:1px solid #1d2740;
-       border-radius:10px;padding:10px 13px;max-width:330px;backdrop-filter:blur(6px)}
-  .hud h1{font-size:15px;margin:0 0 6px;color:#fff}
-  .hud p{margin:4px 0;color:#9fb3d8}
-  .hud b{color:#bfe0ff}
-  .row{display:flex;align-items:center;gap:8px;margin-top:6px}
-  input[type=range]{width:150px}
-  .tag{position:fixed;right:12px;bottom:10px;color:#5b6b8c;font-size:12px}
+  :root {
+    --ink: #f8f5ed;
+    --muted: #aeb6c2;
+    --line: rgba(255, 255, 255, 0.16);
+    --panel: rgba(5, 7, 10, 0.62);
+    --amber: #f2bf72;
+    --cyan: #8ce8dd;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    color: var(--ink);
+    font: 14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", sans-serif;
+  }
+
+  #c {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    cursor: grab;
+  }
+
+  #c:active {
+    cursor: grabbing;
+  }
+
+  .hud,
+  .tag {
+    position: fixed;
+    z-index: 2;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    box-shadow: 0 22px 80px rgba(0, 0, 0, 0.36);
+    backdrop-filter: blur(18px);
+  }
+
+  .hud {
+    left: 18px;
+    top: 18px;
+    width: min(360px, calc(100vw - 36px));
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 8px;
+  }
+
+  h1,
+  p {
+    margin: 0;
+  }
+
+  h1 {
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  p {
+    color: var(--muted);
+  }
+
+  b {
+    color: var(--ink);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: auto 1fr 44px;
+    align-items: center;
+    gap: 9px;
+    color: var(--muted);
+  }
+
+  .row-check {
+    grid-template-columns: auto auto 1fr;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--cyan);
+  }
+
+  input[type="checkbox"] {
+    accent-color: var(--amber);
+  }
+
+  a {
+    color: var(--cyan);
+    text-decoration: none;
+  }
+
+  .tag {
+    right: 18px;
+    bottom: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  @media (max-width: 700px) {
+    .hud {
+      left: 12px;
+      top: 12px;
+      padding: 12px;
+    }
+
+    .tag {
+      left: 12px;
+      right: auto;
+      bottom: 12px;
+      max-width: calc(100vw - 24px);
+      flex-wrap: wrap;
+      border-radius: 8px;
+    }
+  }
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
-<div class="hud">
-  <h1>Ellis wormhole · real-time geodesic ray tracer</h1>
-  <p><b>Drag</b> to look around (up/down/left/right).</p>
-  <p><b>Scroll</b> to fly in / out through the throat.</p>
-  <p>Each pixel back-integrates a null geodesic of the Ellis metric in its own plane.</p>
-  <div class="row"><span>throat&nbsp;b₀</span><input id="b0" type="range" min="0.4" max="3" step="0.05" value="1.0"><span id="b0v">1.00</span></div>
-  <div class="row"><span>auto-fly</span><input id="auto" type="checkbox" checked></div>
+<canvas id="c" aria-label="Real-time Ellis wormhole geodesic ray tracer"></canvas>
+<section class="hud" aria-label="Ray tracer controls">
+  <h1>Ellis wormhole - real-time geodesic ray tracer</h1>
+  <p><b>Drag</b> to look around. <b>Scroll</b> to fly in or out through the throat.</p>
+  <p>Each pixel back-integrates a null geodesic, then samples the lensed near or far universe.</p>
+  <label class="row">
+    <span>throat b0</span>
+    <input id="b0" type="range" min="0.45" max="2.6" step="0.01" value="1.05" />
+    <span id="b0v">1.05</span>
+  </label>
+  <label class="row">
+    <span>exposure</span>
+    <input id="exposure" type="range" min="0.75" max="1.65" step="0.01" value="1.18" />
+    <span id="ev">1.18</span>
+  </label>
+  <label class="row row-check">
+    <span>auto-fly</span>
+    <input id="auto" type="checkbox" checked />
+    <span></span>
+  </label>
+</section>
+<div class="tag">
+  <a href="index.html">Cinematic view</a>
+  <span id="status">60 fps</span>
 </div>
-<div class="tag">wormhole-sim · web/realtime.html</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-const canvas = document.getElementById('c');
-const renderer = new THREE.WebGLRenderer({canvas, antialias:false});
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+const canvas = document.getElementById("c");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
 const scene = new THREE.Scene();
-const cam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
 const uniforms = {
-  iTime:{value:0}, iRes:{value:new THREE.Vector2()},
-  yaw:{value:0.0}, pitch:{value:0.0}, dist:{value:8.0}, b0:{value:1.0}
+  iTime: { value: 0 },
+  iRes: { value: new THREE.Vector2() },
+  yaw: { value: 0.0 },
+  pitch: { value: -0.02 },
+  dist: { value: 8.4 },
+  b0: { value: 1.05 },
+  exposure: { value: 1.18 }
 };
 
 const frag = `
 precision highp float;
-uniform float iTime; uniform vec2 iRes;
-uniform float yaw, pitch, dist, b0;
+uniform float iTime;
+uniform vec2 iRes;
+uniform float yaw;
+uniform float pitch;
+uniform float dist;
+uniform float b0;
+uniform float exposure;
 
-// hash-based procedural starfield sampled by a 3D direction
-float hash(vec3 p){ p=fract(p*0.3183099+vec3(0.1,0.2,0.3)); p*=17.0;
-  return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
-vec3 sky(vec3 d, float side){
-  // grid of stars on a quantized direction
-  vec3 q = floor(d*40.0);
-  float s = step(0.985, hash(q));
-  vec3 star = vec3(s);
-  // faint coordinate grid to reveal lensing
-  float g = smoothstep(0.02,0.0,abs(fract(d.y*8.0)-0.5)-0.48)
-          + smoothstep(0.02,0.0,abs(fract(atan(d.z,d.x)*4.0/3.14159)-0.5)-0.48);
-  vec3 tint = side>0.0 ? vec3(0.10,0.30,0.75) : vec3(0.75,0.30,0.10);
-  return star*1.2 + g*0.25*tint + 0.02*tint;
+const float PI = 3.141592653589793;
+
+float hash21(vec2 p) {
+  p = fract(p * vec2(123.34, 456.21));
+  p += dot(p, p + 45.32);
+  return fract(p.x * p.y);
 }
 
-void main(){
-  vec2 uv = (gl_FragCoord.xy - 0.5*iRes)/iRes.y;
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = hash21(i);
+  float b = hash21(i + vec2(1.0, 0.0));
+  float c = hash21(i + vec2(0.0, 1.0));
+  float d = hash21(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
 
-  // camera direction from yaw/pitch (mouse)
-  float cy=cos(yaw), sy=sin(yaw), cp=cos(pitch), sp=sin(pitch);
-  vec3 fwd = vec3(cp*sy, sp, -cp*cy);
-  vec3 right = normalize(cross(fwd, vec3(0,1,0)));
+float starLayer(vec2 p, float scale, float threshold) {
+  vec2 q = p * scale;
+  vec2 cell = floor(q);
+  vec2 local = fract(q) - 0.5;
+  float rnd = hash21(cell);
+  vec2 offset = vec2(hash21(cell + 11.1), hash21(cell + 71.7)) - 0.5;
+  float d = length(local - offset * 0.65);
+  float core = smoothstep(0.030, 0.0, d) * smoothstep(threshold, 1.0, rnd);
+  return core * (0.35 + 1.35 * rnd);
+}
+
+vec3 universe(vec3 dir, float side) {
+  dir = normalize(dir);
+  vec2 e = vec2(atan(dir.x, dir.z) / PI, asin(clamp(dir.y, -1.0, 1.0)) / (0.5 * PI));
+  e.x += side * 0.18 + 0.012 * sin(iTime * 0.05);
+  float warp = 0.10 * sin(e.x * 7.8 + side * 1.6) + 0.030 * sin(e.x * 24.0 - side);
+  float band = exp(-pow((e.y + warp) / 0.105, 2.0));
+  float dust = noise(e * vec2(12.0, 4.0) + side * 9.0) * 0.62 + noise(e * vec2(36.0, 12.0)) * 0.22;
+  vec3 cold = vec3(0.003, 0.006, 0.014);
+  vec3 warm = side > 0.0 ? vec3(0.08, 0.11, 0.22) : vec3(0.23, 0.11, 0.040);
+  vec3 col = mix(cold, warm, band * (0.28 + dust));
+  float stars =
+    starLayer(e + side * 2.0, 70.0, 0.934) +
+    starLayer(e * 1.8 + 17.0, 150.0, 0.967) +
+    starLayer(e * 2.7 - 41.0, 300.0, 0.984);
+  vec3 starTint = mix(vec3(0.72, 0.86, 1.0), vec3(1.0, 0.72, 0.42), noise(e * 19.0));
+  return col + stars * starTint * 1.45;
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * iRes.xy) / iRes.y;
+  float screenR = length(uv);
+
+  float cy = cos(yaw);
+  float sy = sin(yaw);
+  float cp = cos(pitch);
+  float sp = sin(pitch);
+  vec3 fwd = normalize(vec3(cp * sy, sp, -cp * cy));
+  vec3 right = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
   vec3 up = cross(right, fwd);
-  vec3 rd = normalize(fwd + uv.x*0.9*right + uv.y*0.9*up);
+  vec3 rd = normalize(fwd + uv.x * 0.95 * right + uv.y * 0.95 * up);
 
-  // observer position: radial distance "dist" on the +z axis of wormhole space,
-  // expressed through the proper-radial coordinate l (Ellis: r=sqrt(l^2+b0^2)).
-  float l = dist;                 // start in the near universe (l>0)
-  // reduce to the 2D plane spanned by radial dir e_r and ray rd
-  vec3 er = vec3(0.0,0.0,1.0);    // radial (camera looks toward -z = throat)
+  float l = dist;
+  vec3 er = vec3(0.0, 0.0, 1.0);
   float cosA = clamp(dot(rd, -er), -1.0, 1.0);
-  // transverse basis in the ray plane
-  vec3 et = normalize(rd + er*cosA); // component of rd perpendicular to er
+  vec3 transverse = rd + er * cosA;
+  vec3 et = length(transverse) > 0.0001 ? normalize(transverse) : right;
   float phi = 0.0;
-  // conserved impact parameter h = r * sin(angle to radial)
-  float r = sqrt(l*l + b0*b0);
-  float sinA = sqrt(max(0.0,1.0-cosA*cosA));
+  float r = sqrt(l * l + b0 * b0);
+  float sinA = sqrt(max(0.0, 1.0 - cosA * cosA));
   float h = r * sinA;
-  float pl = -cosA;               // initial dl/dλ (inward)
+  float pl = -cosA;
 
-  // integrate the Ellis null geodesic: l, phi, pl
-  float dlam = 0.25; 
-  for(int i=0;i<200;i++){
-    r = sqrt(l*l + b0*b0);
-    float dphi = h/(r*r);
-    // dpl/dλ = h^2 * l / r^4   (from the radial geodesic equation)
-    float dpl = h*h*l/(r*r*r*r);
-    l   += pl*dlam;
-    phi += dphi*dlam;
-    pl  += dpl*dlam;
-    if(abs(l)>60.0) break;
+  float dlam = 0.20;
+  for (int i = 0; i < 260; i++) {
+    r = sqrt(l * l + b0 * b0);
+    float dphi = h / (r * r);
+    float dpl = h * h * l / (r * r * r * r);
+    l += pl * dlam;
+    phi += dphi * dlam;
+    pl += dpl * dlam;
+    if (abs(l) > 72.0) {
+      break;
+    }
   }
-  float side = l>0.0 ? 1.0 : -1.0;
 
-  // reconstruct outgoing 3D direction in the ray plane
-  vec3 outdir = normalize(cos(phi)*(-er) + sin(phi)*et);
-  // rotate by camera yaw so panning moves the background
-  vec3 col = sky(outdir, side);
+  float side = l > 0.0 ? 1.0 : -1.0;
+  vec3 outdir = normalize(cos(phi) * (-er) + sin(phi) * et);
+  vec3 col = universe(outdir, side);
 
-  // gentle vignette + tone
-  col *= 1.0 - 0.25*length(uv);
-  gl_FragColor = vec4(pow(col, vec3(0.85)), 1.0);
+  float impact = h / max(b0, 0.001);
+  float rim = exp(-pow((impact - 1.02) / 0.026, 2.0));
+  float secondary = exp(-pow((impact - 1.34) / 0.075, 2.0));
+  float inner = smoothstep(0.90, 0.34, impact);
+  col *= 1.0 - inner * 0.74;
+  col += vec3(1.75, 1.18, 0.62) * rim * 0.95;
+  col += vec3(0.18, 0.62, 0.72) * secondary * 0.34;
+
+  float diskTilt = uv.y + 0.035 * sin(uv.x * 3.6 + iTime * 0.12);
+  float disk = exp(-pow(diskTilt / 0.014, 2.0));
+  float diskMask = smoothstep(0.13, 0.30, abs(uv.x)) * smoothstep(1.12, 0.08, screenR);
+  float front = smoothstep(-0.03, 0.09, uv.y);
+  col += mix(vec3(1.0, 0.24, 0.08), vec3(1.0, 0.82, 0.42), smoothstep(-0.6, 0.75, uv.x)) *
+    disk * diskMask * (0.35 + 0.80 * front);
+
+  float vignette = smoothstep(1.20, 0.06, length(uv * vec2(0.78, 1.0)));
+  col *= 0.36 + 0.92 * vignette;
+  col *= exposure;
+  col = col / (col + vec3(1.0));
+  col = pow(col, vec3(0.82));
+  gl_FragColor = vec4(col, 1.0);
 }
 `;
 
-const mat = new THREE.ShaderMaterial({uniforms, fragmentShader:frag,
-  vertexShader:`void main(){ gl_Position=vec4(position,1.0); }`});
-scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), mat));
-
-// --- interaction: drag to look, wheel to zoom (fly through) ---
-let drag=false, px=0, py=0;
-canvas.addEventListener('mousedown',e=>{drag=true;px=e.clientX;py=e.clientY;});
-addEventListener('mouseup',()=>drag=false);
-addEventListener('mousemove',e=>{
-  if(!drag) return;
-  uniforms.yaw.value   += (e.clientX-px)*0.005;
-  uniforms.pitch.value += (e.clientY-py)*0.005;
-  uniforms.pitch.value = Math.max(-1.4, Math.min(1.4, uniforms.pitch.value));
-  px=e.clientX; py=e.clientY;
+const mat = new THREE.ShaderMaterial({
+  uniforms,
+  fragmentShader: frag,
+  vertexShader: "void main(){ gl_Position = vec4(position, 1.0); }"
 });
-canvas.addEventListener('wheel',e=>{
-  e.preventDefault();
-  uniforms.dist.value = Math.max(-12, Math.min(20, uniforms.dist.value + e.deltaY*0.01));
-}, {passive:false});
+scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat));
 
-const b0s=document.getElementById('b0'), b0v=document.getElementById('b0v');
-b0s.addEventListener('input',()=>{uniforms.b0.value=parseFloat(b0s.value);b0v.textContent=(+b0s.value).toFixed(2);});
-const auto=document.getElementById('auto');
-
-function resize(){
-  const w=innerWidth, h=innerHeight;
-  renderer.setSize(w,h,false);
-  uniforms.iRes.value.set(w*renderer.getPixelRatio(), h*renderer.getPixelRatio());
-}
-addEventListener('resize',resize); resize();
-
-let t0=performance.now();
-function loop(t){
-  uniforms.iTime.value=(t-t0)/1000;
-  if(auto.checked){ // slow automatic fly-through animation
-    uniforms.dist.value -= 0.015;
-    if(uniforms.dist.value < -10) uniforms.dist.value = 18;
+let drag = false;
+let px = 0;
+let py = 0;
+canvas.addEventListener("mousedown", (event) => {
+  drag = true;
+  px = event.clientX;
+  py = event.clientY;
+});
+window.addEventListener("mouseup", () => {
+  drag = false;
+});
+window.addEventListener("mousemove", (event) => {
+  if (!drag) {
+    return;
   }
-  renderer.render(scene,cam);
+  uniforms.yaw.value += (event.clientX - px) * 0.005;
+  uniforms.pitch.value += (event.clientY - py) * 0.005;
+  uniforms.pitch.value = Math.max(-1.35, Math.min(1.35, uniforms.pitch.value));
+  px = event.clientX;
+  py = event.clientY;
+});
+canvas.addEventListener("wheel", (event) => {
+  event.preventDefault();
+  uniforms.dist.value = Math.max(-12, Math.min(20, uniforms.dist.value + event.deltaY * 0.01));
+}, { passive: false });
+
+const b0s = document.getElementById("b0");
+const b0v = document.getElementById("b0v");
+const exposure = document.getElementById("exposure");
+const ev = document.getElementById("ev");
+const auto = document.getElementById("auto");
+const status = document.getElementById("status");
+
+b0s.addEventListener("input", () => {
+  uniforms.b0.value = Number(b0s.value);
+  b0v.textContent = Number(b0s.value).toFixed(2);
+});
+exposure.addEventListener("input", () => {
+  uniforms.exposure.value = Number(exposure.value);
+  ev.textContent = Number(exposure.value).toFixed(2);
+});
+
+function resize() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  const dpr = renderer.getPixelRatio();
+  uniforms.iRes.value.set(Math.max(1, Math.floor(w * dpr)), Math.max(1, Math.floor(h * dpr)));
+}
+window.addEventListener("resize", resize);
+resize();
+
+let t0 = performance.now();
+let last = t0;
+let fps = 60;
+function loop(t) {
+  uniforms.iTime.value = (t - t0) / 1000;
+  if (auto.checked && !drag) {
+    uniforms.dist.value -= 0.010;
+    if (uniforms.dist.value < -10.5) {
+      uniforms.dist.value = 18;
+    }
+  }
+  fps = fps * 0.92 + (1000 / Math.max(16, t - last)) * 0.08;
+  last = t;
+  status.textContent = Math.round(fps) + " fps";
+  renderer.render(scene, cam);
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
